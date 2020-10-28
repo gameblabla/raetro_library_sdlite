@@ -104,32 +104,33 @@ extern "C" {
  *  which, if not NULL, contains the raw pixel data for the surface.
  */
 typedef struct SDL_Surface {
-	Uint32 flags;                /**< Read-only */
+	Uint32 flags;                   /**< Read-only */
 	SDL_PixelFormat *format;        /**< Read-only */
-	int w, h;                /**< Read-only */
-	Uint16 pitch;                /**< Read-only */
-	void *pixels;                /**< Read-write */
-	int offset;                /**< Private */
+	int w, h;                       /**< Read-only */
+	Uint16 pitch;                   /**< Read-only */
+	void *pixels;                   /**< Read-write */
+	int offset;                     /**< Private */
 
 	/** Hardware-specific surface info */
 	struct private_hwdata *hwdata;
 
 	/** clipping information */
-	SDL_Rect clip_rect;            /**< Read-only */
-	Uint32 unused1;                /**< for binary compatibility */
+	SDL_Rect clip_rect;             /**< Read-only */
+	Uint32 unused1;                 /**< for binary compatibility */
 
 	/** Allow recursive locks */
-	Uint32 locked;                /**< Private */
+	Uint32 locked;                  /**< Private */
 
 	/** info for fast blit mapping to other surfaces */
 	struct SDL_BlitMap *map;        /**< Private */
 
 	/** format version, bumped at every change to invalidate blit maps */
-	unsigned int format_version;        /**< Private */
+	unsigned int format_version;    /**< Private */
 
 	/** Reference count -- used when freeing surface */
-	int refcount;                /**< Read-mostly */
+	int refcount;                   /**< Read-mostly */
 } SDL_Surface;
+
 
 /** @name SDL_Surface Flags
  *  These are the currently supported flags for the SDL_surface
@@ -138,9 +139,9 @@ typedef struct SDL_Surface {
 
 /** Available for SDL_CreateRGBSurface() or SDL_SetVideoMode() */
 /*@{*/
-#define SDL_SWSURFACE  0x00000000  /**< Surface is in system memory */
-#define SDL_HWSURFACE  0x00000001  /**< Surface is in video memory */
-#define SDL_ASYNCBLIT  0x00000004  /**< Use asynchronous blits if possible */
+#define SDL_SWSURFACE    0x00000000 /**< Surface is in system memory */
+#define SDL_HWSURFACE    0x00000001 /**< Surface is in video memory */
+#define SDL_ASYNCBLIT    0x00000004 /**< Use asynchronous blits if possible */
 /*@}*/
 
 /** Available for SDL_SetVideoMode() */
@@ -157,7 +158,7 @@ typedef struct SDL_Surface {
 #define SDL_RESIZABLE    0x00000010 /**< This video mode may be resized */
 #define SDL_NOFRAME      0x00000020 /**< No window caption or edge frame */
 #define SDL_SWIZZLEBGR   0x00000040 /**< Video mode has BGR subpixel ordering (not RGB) */
-#define SDL_YUV444	0x00000080	/**< Video mode is multi-planar YUV 4:4:4 */
+#define SDL_YUV444       0x00000080 /**< Video mode is multi-planar YUV 4:4:4 */
 /*@}*/
 
 /** Used internally (read-only) */
@@ -180,23 +181,24 @@ typedef int (*SDL_blit)(struct SDL_Surface *src, SDL_Rect *srcrect, struct SDL_S
 
 /** Useful for determining the video hardware capabilities */
 typedef struct SDL_VideoInfo {
-	Uint32 hw_available: 1;    /**< Flag: Can you create hardware surfaces? */
-	Uint32 wm_available: 1;    /**< Flag: Can you talk to a window manager? */
+	Uint32 hw_available: 1; /**< Flag: Can you create hardware surfaces? */
+	Uint32 wm_available: 1; /**< Flag: Can you talk to a window manager? */
 	Uint32 UnusedBits1: 6;
 	Uint32 UnusedBits2: 1;
-	Uint32 blit_hw: 1;    /**< Flag: Accelerated blits HW --> HW */
-	Uint32 blit_hw_CC: 1;    /**< Flag: Accelerated blits with Colorkey */
+	Uint32 blit_hw: 1;      /**< Flag: Accelerated blits HW --> HW */
+	Uint32 blit_hw_CC: 1;   /**< Flag: Accelerated blits with Colorkey */
 	Uint32 blit_hw_A: 1;    /**< Flag: Accelerated blits with Alpha */
-	Uint32 blit_sw: 1;    /**< Flag: Accelerated blits SW --> HW */
-	Uint32 blit_sw_CC: 1;    /**< Flag: Accelerated blits with Colorkey */
+	Uint32 blit_sw: 1;      /**< Flag: Accelerated blits SW --> HW */
+	Uint32 blit_sw_CC: 1;   /**< Flag: Accelerated blits with Colorkey */
 	Uint32 blit_sw_A: 1;    /**< Flag: Accelerated blits with Alpha */
 	Uint32 blit_fill: 1;    /**< Flag: Accelerated color fill */
 	Uint32 UnusedBits3: 16;
-	Uint32 video_mem;    /**< The total amount of video memory (in K) */
-	SDL_PixelFormat *vfmt;    /**< Value: The format of the video surface */
-	int current_w;    /**< Value: The current video mode width */
-	int current_h;    /**< Value: The current video mode height */
+	Uint32 video_mem;       /**< The total amount of video memory (in K) */
+	SDL_PixelFormat *vfmt;  /**< Value: The format of the video surface */
+	int current_w;          /**< Value: The current video mode width */
+	int current_h;          /**< Value: The current video mode height */
 } SDL_VideoInfo;
+
 
 /** @name Overlay Formats
  *  The most common video overlay formats.
@@ -234,7 +236,6 @@ typedef struct SDL_Overlay {
 	Uint32 UnusedBits: 31;
 	/*@}*/
 } SDL_Overlay;
-
 
 /** Public enumeration for setting the OpenGL window attributes. */
 typedef enum {
@@ -750,6 +751,28 @@ extern DECLSPEC int SDLCALL SDL_UpperBlit(SDL_Surface *src, SDL_Rect *srcrect, S
 extern DECLSPEC int SDLCALL SDL_LowerBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
 
 /**
+ *  \brief Perform a fast, low quality, stretch blit between two surfaces of the
+ *         same pixel format.
+ *
+ *  \note This function uses a static buffer, and is not thread-safe.
+ */
+extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+
+#define SDL_BlitScaled SDL_UpperBlitScaled
+
+/**
+ *  This is the public scaled blit function, SDL_BlitScaled(), and it performs
+ *  rectangle validation and clipping before passing it to SDL_LowerBlitScaled()
+ */
+extern DECLSPEC int SDLCALL SDL_UpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
+
+/**
+ *  This is a semi-private blit function and it performs low-level surface
+ *  scaled blitting only.
+ */
+extern DECLSPEC int SDLCALL SDL_LowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
+
+/**
  * This function performs a fast fill of the given rectangle with 'color'
  * The given rectangle is clipped to the destination surface clip area
  * and the final fill rectangle is saved in the passed in pointer.
@@ -830,7 +853,7 @@ extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
 /**
  * Get the address of a GL function
  */
-extern DECLSPEC void * SDLCALL SDL_GL_GetProcAddress(const char* proc);
+extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
 
 /**
  * Set an attribute of the OpenGL subsystem before intialization.
@@ -884,7 +907,7 @@ extern DECLSPEC int SDLCALL SDL_GLES_LoadLibrary(const char *path);
 /**
  * Get the address of an OpenGL ES (extension) function
  */
-extern DECLSPEC void * SDLCALL SDL_GLES_GetProcAddress(const char* proc);
+extern DECLSPEC void *SDLCALL SDL_GLES_GetProcAddress(const char *proc);
 /*@}*/
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -950,9 +973,6 @@ typedef enum {
  */
 extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput(SDL_GrabMode mode);
 /*@}*/
-
-/** @internal Not in public API at the moment - do not use! */
-extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

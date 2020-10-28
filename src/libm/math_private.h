@@ -17,8 +17,31 @@
 #include "SDL_name.h"
 #include "SDL_endian.h"
 
-#define huge        really_big /* huge is a reserved keyword in VC++ 6.0 */
-#define u_int32_t    uint32_t
+#define _IEEE_LIBM
+#define attribute_hidden
+#define libm_hidden_proto(x)
+#define libm_hidden_def(x)
+#define strong_alias(x, y)
+
+#define huge            really_big /* huge is a reserved keyword in VC++ 6.0 */
+#define u_int32_t       uint32_t
+
+#define atan            SDL_uclibc_atan
+#define __ieee754_atan2 SDL_uclibc_atan2
+#define copysign        SDL_uclibc_copysign
+#define cos             SDL_uclibc_cos
+#define __ieee754_exp   SDL_uclibc_exp
+#define fabs            SDL_uclibc_fabs
+#define floor           SDL_uclibc_floor
+#define __ieee754_fmod  SDL_uclibc_fmod
+#define __ieee754_log   SDL_uclibc_log
+#define __ieee754_log10 SDL_uclibc_log10
+#define __ieee754_pow   SDL_uclibc_pow
+#define scalbln         SDL_uclibc_scalbln
+#define scalbn          SDL_uclibc_scalbn
+#define sin             SDL_uclibc_sin
+#define __ieee754_sqrt  SDL_uclibc_sqrt
+#define tan             SDL_uclibc_tan
 
 /* The original fdlibm code used statements like:
 	n0 = ((*(int*)&one)>>29)^1;		* index of high word *
@@ -145,7 +168,6 @@ do {                               \
     sf_u.word = (i);               \
     (d) = sf_u.value;              \
 } while (0)
-
 
 #ifdef __STDC__
 static const double

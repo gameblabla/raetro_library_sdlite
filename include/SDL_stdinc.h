@@ -360,17 +360,30 @@ extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, in
 #define SDL_min(x, y)    (((x) < (y)) ? (x) : (y))
 #define SDL_max(x, y)    (((x) > (y)) ? (x) : (y))
 
-#ifdef HAVE_CTYPE_H
-#define SDL_isdigit(X)  isdigit(X)
-#define SDL_isspace(X)  isspace(X)
-#define SDL_toupper(X)  toupper(X)
-#define SDL_tolower(X)  tolower(X)
-#else
-#define SDL_isdigit(X)  (((X) >= '0') && ((X) <= '9'))
-#define SDL_isspace(X)  (((X) == ' ') || ((X) == '\t') || ((X) == '\r') || ((X) == '\n'))
-#define SDL_toupper(X)  (((X) >= 'a') && ((X) <= 'z') ? ('A'+((X)-'a')) : (X))
-#define SDL_tolower(X)  (((X) >= 'A') && ((X) <= 'Z') ? ('a'+((X)-'A')) : (X))
-#endif
+
+/**
+ * @brief
+ *
+ */
+extern DECLSPEC int SDLCALL SDL_isdigit(int x);
+extern DECLSPEC int SDLCALL SDL_isspace(int x);
+extern DECLSPEC int SDLCALL SDL_isupper(int x);
+extern DECLSPEC int SDLCALL SDL_islower(int x);
+extern DECLSPEC int SDLCALL SDL_toupper(int x);
+extern DECLSPEC int SDLCALL SDL_tolower(int x);
+
+
+//#ifdef HAVE_CTYPE_H
+//#define SDL_isdigit(X)  isdigit(X)
+//#define SDL_isspace(X)  isspace(X)
+//#define SDL_toupper(X)  toupper(X)
+//#define SDL_tolower(X)  tolower(X)
+//#else
+//#define SDL_isdigit(X)  (((X) >= '0') && ((X) <= '9'))
+//#define SDL_isspace(X)  (((X) == ' ') || ((X) == '\t') || ((X) == '\r') || ((X) == '\n'))
+//#define SDL_toupper(X)  (((X) >= 'a') && ((X) <= 'z') ? ('A'+((X)-'a')) : (X))
+//#define SDL_tolower(X)  (((X) >= 'A') && ((X) <= 'Z') ? ('a'+((X)-'A')) : (X))
+//#endif
 
 #ifdef HAVE_MEMSET
 #define SDL_memset      memset
@@ -380,33 +393,21 @@ extern DECLSPEC void *SDLCALL SDL_memset(void *dst, int c, size_t len);
 
 #endif
 
-#if defined(__GNUC__) && defined(i386)
-#define SDL_memset4(dst, val, len)				\
-do {								\
-	int u0, u1, u2;						\
-	__asm__ __volatile__ (					\
-		"cld\n\t"					\
-		"rep ; stosl\n\t"				\
-		: "=&D" (u0), "=&a" (u1), "=&c" (u2)		\
-		: "0" (dst), "1" (val), "2" (SDL_static_cast(Uint32, len))	\
-		: "memory" );					\
-} while(0)
-#endif
 #ifndef SDL_memset4
-#define SDL_memset4(dst, val, len)        \
-do {                        \
-    unsigned _count = (len);        \
-    unsigned _n = (_count + 3) / 4;        \
-    Uint32 *_p = SDL_static_cast(Uint32 *, dst);    \
-    Uint32 _val = (val);            \
-    if (len == 0) break;            \
-        switch (_count % 4) {            \
-        case 0: do {    *_p++ = _val;        \
-        case 3:         *_p++ = _val;        \
-        case 2:         *_p++ = _val;        \
-        case 1:         *_p++ = _val;        \
-        } while ( --_n );        \
-    }                    \
+#define SDL_memset4(dst, val, len)               \
+do {                                             \
+    unsigned _count = (len);                     \
+    unsigned _n = (_count + 3) / 4;              \
+    Uint32 *_p = SDL_static_cast(Uint32 *, dst); \
+    Uint32 _val = (val);                         \
+    if (len == 0) break;                         \
+        switch (_count % 4) {                    \
+        case 0: do {    *_p++ = _val;            \
+        case 3:         *_p++ = _val;            \
+        case 2:         *_p++ = _val;            \
+        case 1:         *_p++ = _val;            \
+        } while ( --_n );                        \
+    }                                            \
 } while(0)
 #endif
 
@@ -440,11 +441,11 @@ extern DECLSPEC void *SDLCALL SDL_revcpy(void *dst, const void *src, size_t len)
 #define SDL_memmove(d, s, n)	bcopy((s), (d), (n))
 #else
 #define SDL_memmove(dst, src, len) do { \
-	if ( dst < src ) {                \
-		SDL_memcpy(dst, src, len);        \
-	} else {                    \
-		SDL_revcpy(dst, src, len);        \
-	}                        \
+    if ( dst < src ) {                \
+        SDL_memcpy(dst, src, len);        \
+    } else {                    \
+        SDL_revcpy(dst, src, len);        \
+    }                        \
 } while(0)
 #endif
 
@@ -687,7 +688,9 @@ extern DECLSPEC int SDLCALL SDL_sscanf(const char *text, const char *fmt, ...);
 #if defined(HAVE_SNPRINTF) && !(defined(__WATCOMC__) || defined(_WIN32))
 #define SDL_snprintf    snprintf
 #else
+
 extern DECLSPEC int SDLCALL SDL_snprintf(char *text, size_t maxlen, const char *fmt, ...);
+
 #endif
 
 #if defined(HAVE_VSNPRINTF) && !(defined(__WATCOMC__) || defined(_WIN32))
@@ -698,8 +701,54 @@ extern DECLSPEC int SDLCALL SDL_vsnprintf(char *text, size_t maxlen, const char 
 
 #endif
 
-/** @name SDL_ICONV Error Codes
- *  The SDL implementation of iconv() returns these error codes 
+#ifndef HAVE_M_PI
+#ifndef M_PI
+#define M_PI    3.14159265358979323846264338327950288   /**< pi */
+#endif
+#endif
+
+extern DECLSPEC double SDLCALL SDL_acos(double x);
+extern DECLSPEC float SDLCALL SDL_acosf(float x);
+extern DECLSPEC double SDLCALL SDL_asin(double x);
+extern DECLSPEC float SDLCALL SDL_asinf(float x);
+extern DECLSPEC double SDLCALL SDL_atan(double x);
+extern DECLSPEC float SDLCALL SDL_atanf(float x);
+extern DECLSPEC double SDLCALL SDL_atan2(double x, double y);
+extern DECLSPEC float SDLCALL SDL_atan2f(float x, float y);
+extern DECLSPEC double SDLCALL SDL_ceil(double x);
+extern DECLSPEC float SDLCALL SDL_ceilf(float x);
+extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
+extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
+extern DECLSPEC double SDLCALL SDL_cos(double x);
+extern DECLSPEC float SDLCALL SDL_cosf(float x);
+extern DECLSPEC double SDLCALL SDL_exp(double x);
+extern DECLSPEC float SDLCALL SDL_expf(float x);
+extern DECLSPEC double SDLCALL SDL_fabs(double x);
+extern DECLSPEC float SDLCALL SDL_fabsf(float x);
+extern DECLSPEC double SDLCALL SDL_floor(double x);
+extern DECLSPEC float SDLCALL SDL_floorf(float x);
+extern DECLSPEC double SDLCALL SDL_trunc(double x);
+extern DECLSPEC float SDLCALL SDL_truncf(float x);
+extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
+extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
+extern DECLSPEC double SDLCALL SDL_log(double x);
+extern DECLSPEC float SDLCALL SDL_logf(float x);
+extern DECLSPEC double SDLCALL SDL_log10(double x);
+extern DECLSPEC float SDLCALL SDL_log10f(float x);
+extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
+extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
+extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
+extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
+extern DECLSPEC double SDLCALL SDL_sin(double x);
+extern DECLSPEC float SDLCALL SDL_sinf(float x);
+extern DECLSPEC double SDLCALL SDL_sqrt(double x);
+extern DECLSPEC float SDLCALL SDL_sqrtf(float x);
+extern DECLSPEC double SDLCALL SDL_tan(double x);
+extern DECLSPEC float SDLCALL SDL_tanf(float x);
+
+/**
+ * @name SDL_ICONV Error Codes
+ * The SDL implementation of iconv() returns these error codes
  */
 /*@{*/
 #define SDL_ICONV_ERROR  (size_t)-1

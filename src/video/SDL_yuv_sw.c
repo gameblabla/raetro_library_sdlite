@@ -1058,8 +1058,8 @@ int SDL_DisplayYUV_SW(_THIS, SDL_Overlay *overlay, SDL_Rect *src, SDL_Rect *dst)
 		SDL_UnlockSurface(display);
 	}
 	if(stretch) {
-		display = swdata->display;
-		SDL_SoftStretch(swdata->stretch, src, display, dst);
+		SDL_Rect rect = *src;
+		SDL_SoftStretch(swdata->stretch, &rect, swdata->display, NULL);
 	}
 	SDL_UpdateRects(display, 1, dst);
 

@@ -36,6 +36,33 @@
 
 #include "SDL_endian.h"
 
+/* Table to do pixel byte expansion */
+extern Uint8* SDL_expand_byte[9];
+
+/* SDL blit copy flags */
+#define SDL_COPY_MODULATE_COLOR     0x00000001
+#define SDL_COPY_MODULATE_ALPHA     0x00000002
+#define SDL_COPY_BLEND              0x00000010
+#define SDL_COPY_ADD                0x00000020
+#define SDL_COPY_MOD                0x00000040
+#define SDL_COPY_MUL                0x00000080
+#define SDL_COPY_COLORKEY           0x00000100
+#define SDL_COPY_NEAREST            0x00000200
+#define SDL_COPY_RLE_DESIRED        0x00001000
+#define SDL_COPY_RLE_COLORKEY       0x00002000
+#define SDL_COPY_RLE_ALPHAKEY       0x00004000
+#define SDL_COPY_RLE_MASK           (SDL_COPY_RLE_DESIRED|SDL_COPY_RLE_COLORKEY|SDL_COPY_RLE_ALPHAKEY)
+
+/* SDL blit CPU flags */
+#define SDL_CPU_ANY                 0x00000000
+#define SDL_CPU_MMX                 0x00000001
+#define SDL_CPU_3DNOW               0x00000002
+#define SDL_CPU_SSE                 0x00000004
+#define SDL_CPU_SSE2                0x00000008
+#define SDL_CPU_ALTIVEC_PREFETCH    0x00000010
+#define SDL_CPU_ALTIVEC_NOPREFETCH  0x00000020
+
+
 /* The structure passed to the low level blit functions */
 typedef struct {
 	Uint8 *s_pixels;
@@ -48,8 +75,9 @@ typedef struct {
 	int d_skip;
 	void *aux_data;
 	SDL_PixelFormat *src;
-	Uint8 *table;
 	SDL_PixelFormat *dst;
+	Uint8 *table;
+	int flags;
 } SDL_BlitInfo;
 
 /* The type definition for the low level blit functions */
@@ -70,7 +98,7 @@ typedef struct SDL_BlitMap {
 	SDL_blit sw_blit;
 	struct private_hwaccel *hw_data;
 	struct private_swaccel *sw_data;
-
+	SDL_BlitInfo info;
 	/* the version count matches the destination; mismatch indicates
 	   an invalid mapping */
 	unsigned int format_version;

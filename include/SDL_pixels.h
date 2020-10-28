@@ -180,6 +180,7 @@ struct SDL_Palette {
 
 /* Everything in the pixel format structure is read-only */
 typedef struct SDL_PixelFormat {
+	Uint32 format;
 	SDL_Palette *palette;
 	Uint8 BitsPerPixel;
 	Uint8 BytesPerPixel;

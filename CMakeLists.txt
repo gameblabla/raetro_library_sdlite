@@ -116,10 +116,29 @@ add_executable(sdlite_dirty
 			   src/joystick/SDL_joystick.c
 			   src/joystick/SDL_joystick_c.h
 			   src/joystick/SDL_sysjoystick.h
+			   src/libm/e_atan2.c
+			   src/libm/e_exp.c
+			   src/libm/e_fmod.c
 			   src/libm/e_log.h
+			   src/libm/e_log10.c
 			   src/libm/e_pow.h
+			   src/libm/e_rem_pio2.c
+			   src/libm/e_sqrt.c
 			   src/libm/e_sqrt.h
+			   src/libm/k_cos.c
+			   src/libm/k_rem_pio2.c
+			   src/libm/k_sin.c
+			   src/libm/k_tan.c
+			   src/libm/math_libm.h
 			   src/libm/math_private.h
+			   src/libm/s_atan.c
+			   src/libm/s_copysign.c
+			   src/libm/s_cos.c
+			   src/libm/s_fabs.c
+			   src/libm/s_floor.c
+			   src/libm/s_scalbn.c
+			   src/libm/s_sin.c
+			   src/libm/s_tan.c
 			   src/loadso/dlopen/SDL_sysloadso.c
 			   src/loadso/dummy/SDL_sysloadso.c
 			   src/main/dummy/SDL_dummy_main.c

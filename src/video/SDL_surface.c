@@ -198,7 +198,6 @@ int SDL_SetColorKey(SDL_Surface *surface, Uint32 flag, Uint32 key) {
 		SDL_VideoDevice *video = current_video;
 		SDL_VideoDevice *this = current_video;
 
-
 		surface->flags |= SDL_SRCCOLORKEY;
 		surface->format->colorkey = key;
 		if((surface->flags & SDL_HWACCEL) == SDL_HWACCEL) {
@@ -434,7 +433,6 @@ int SDL_LowerBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rec
 	return (do_blit(src, srcrect, dst, dstrect));
 }
 
-
 int SDL_UpperBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
 	SDL_Rect fulldst;
 	int srcx, srcy, w, h;
@@ -527,6 +525,178 @@ int SDL_UpperBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rec
 	}
 	dstrect->w = dstrect->h = 0;
 	return 0;
+}
+
+
+/**
+ *  This is a semi-private blit function and it performs low-level surface
+ *  scaled blitting only.
+ */
+int SDL_LowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
+	static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_COLORKEY);
+
+	if(!(src->map->info.flags & SDL_COPY_NEAREST)) {
+		src->map->info.flags |= SDL_COPY_NEAREST;
+		SDL_InvalidateMap(src->map);
+	}
+
+	if(!(src->map->info.flags & complex_copy_flags) && src->format->format == dst->format->format && !SDL_ISPIXELFORMAT_INDEXED(src->format->format)) {
+		return SDL_SoftStretch(src, srcrect, dst, dstrect);
+	} else {
+		return SDL_LowerBlit(src, srcrect, dst, dstrect);
+	}
+}
+
+
+int SDL_UpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
+	double src_x0, src_y0, src_x1, src_y1;
+	double dst_x0, dst_y0, dst_x1, dst_y1;
+	SDL_Rect final_src, final_dst;
+	double scaling_w, scaling_h;
+	int src_w, src_h;
+	int dst_w, dst_h;
+
+	/* Make sure the surfaces aren't locked */
+	if(!src || !dst) {
+		SDL_SetError("SDL_UpperBlitScaled: passed a NULL surface");
+		return (-1);
+	}
+	if(src->locked || dst->locked) {
+		SDL_SetError("Surfaces must not be locked during blit");
+		return (-1);
+	}
+
+	if(NULL == srcrect) {
+		src_w = src->w;
+		src_h = src->h;
+	} else {
+		src_w = srcrect->w;
+		src_h = srcrect->h;
+	}
+
+	if(NULL == dstrect) {
+		dst_w = dst->w;
+		dst_h = dst->h;
+	} else {
+		dst_w = dstrect->w;
+		dst_h = dstrect->h;
+	}
+
+	if(dst_w == src_w && dst_h == src_h) {
+		/* No scaling, defer to regular blit */
+		return SDL_BlitSurface(src, srcrect, dst, dstrect);
+	}
+
+	scaling_w = (double) dst_w / src_w;
+	scaling_h = (double) dst_h / src_h;
+
+	if(NULL == dstrect) {
+		dst_x0 = 0;
+		dst_y0 = 0;
+		dst_x1 = dst_w - 1;
+		dst_y1 = dst_h - 1;
+	} else {
+		dst_x0 = dstrect->x;
+		dst_y0 = dstrect->y;
+		dst_x1 = dst_x0 + dst_w - 1;
+		dst_y1 = dst_y0 + dst_h - 1;
+	}
+
+	if(NULL == srcrect) {
+		src_x0 = 0;
+		src_y0 = 0;
+		src_x1 = src_w - 1;
+		src_y1 = src_h - 1;
+	} else {
+		src_x0 = srcrect->x;
+		src_y0 = srcrect->y;
+		src_x1 = src_x0 + src_w - 1;
+		src_y1 = src_y0 + src_h - 1;
+
+		/* Clip source rectangle to the source surface */
+
+		if(src_x0 < 0) {
+			dst_x0 -= src_x0 * scaling_w;
+			src_x0 = 0;
+		}
+
+		if(src_x1 >= src->w) {
+			dst_x1 -= (src_x1 - src->w + 1) * scaling_w;
+			src_x1 = src->w - 1;
+		}
+
+		if(src_y0 < 0) {
+			dst_y0 -= src_y0 * scaling_h;
+			src_y0 = 0;
+		}
+
+		if(src_y1 >= src->h) {
+			dst_y1 -= (src_y1 - src->h + 1) * scaling_h;
+			src_y1 = src->h - 1;
+		}
+	}
+
+	/* Clip destination rectangle to the clip rectangle */
+
+	/* Translate to clip space for easier calculations */
+	dst_x0 -= dst->clip_rect.x;
+	dst_x1 -= dst->clip_rect.x;
+	dst_y0 -= dst->clip_rect.y;
+	dst_y1 -= dst->clip_rect.y;
+
+	if(dst_x0 < 0) {
+		src_x0 -= dst_x0 / scaling_w;
+		dst_x0 = 0;
+	}
+
+	if(dst_x1 >= dst->clip_rect.w) {
+		src_x1 -= (dst_x1 - dst->clip_rect.w + 1) / scaling_w;
+		dst_x1 = dst->clip_rect.w - 1;
+	}
+
+	if(dst_y0 < 0) {
+		src_y0 -= dst_y0 / scaling_h;
+		dst_y0 = 0;
+	}
+
+	if(dst_y1 >= dst->clip_rect.h) {
+		src_y1 -= (dst_y1 - dst->clip_rect.h + 1) / scaling_h;
+		dst_y1 = dst->clip_rect.h - 1;
+	}
+
+	/* Translate back to surface coordinates */
+	dst_x0 += dst->clip_rect.x;
+	dst_x1 += dst->clip_rect.x;
+	dst_y0 += dst->clip_rect.y;
+	dst_y1 += dst->clip_rect.y;
+
+	final_src.x = (int) SDL_floor(src_x0 + 0.5);
+	final_src.y = (int) SDL_floor(src_y0 + 0.5);
+	final_src.w = (int) SDL_floor(src_x1 + 1 + 0.5) - (int) SDL_floor(src_x0 + 0.5);
+	final_src.h = (int) SDL_floor(src_y1 + 1 + 0.5) - (int) SDL_floor(src_y0 + 0.5);
+
+	final_dst.x = (int) SDL_floor(dst_x0 + 0.5);
+	final_dst.y = (int) SDL_floor(dst_y0 + 0.5);
+	final_dst.w = (int) SDL_floor(dst_x1 - dst_x0 + 1.5);
+	final_dst.h = (int) SDL_floor(dst_y1 - dst_y0 + 1.5);
+
+	if(final_dst.w < 0) {
+		final_dst.w = 0;
+	}
+	if(final_dst.h < 0) {
+		final_dst.h = 0;
+	}
+
+	if(dstrect) {
+		*dstrect = final_dst;
+	}
+
+	if(final_dst.w == 0 || final_dst.h == 0 || final_src.w <= 0 || final_src.h <= 0) {
+		/* No-op. */
+		return 0;
+	}
+
+	return SDL_LowerBlitScaled(src, &final_src, dst, &final_dst);
 }
 
 static int SDL_FillRect1(SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color) {
@@ -644,70 +814,6 @@ int SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color) {
 				row += dst->pitch;
 			}
 		} else {
-#ifdef __powerpc__
-			/*
-			 * SDL_memset() on PPC (both glibc and codewarrior) uses
-			 * the dcbz (Data Cache Block Zero) instruction, which
-			 * causes an alignment exception if the destination is
-			 * uncachable, so only use it on software surfaces
-			 */
-			if((dst->flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
-				if(dstrect->w >= 8) {
-					/*
-					 * 64-bit stores are probably most
-					 * efficient to uncached video memory
-					 */
-					double fill;
-					SDL_memset(&fill, color, (sizeof fill));
-					for(y = dstrect->h; y; y--) {
-						Uint8 *d = row;
-						unsigned n = x;
-						unsigned nn;
-						Uint8 c = color;
-						double f = fill;
-						while((unsigned long)d
-							  & (sizeof(double) - 1)) {
-							*d++ = c;
-							n--;
-						}
-						nn = n / (sizeof(double) * 4);
-						while(nn) {
-							((double *)d)[0] = f;
-							((double *)d)[1] = f;
-							((double *)d)[2] = f;
-							((double *)d)[3] = f;
-							d += 4*sizeof(double);
-							nn--;
-						}
-						n &= ~(sizeof(double) * 4 - 1);
-						nn = n / sizeof(double);
-						while(nn) {
-							*(double *)d = f;
-							d += sizeof(double);
-							nn--;
-						}
-						n &= ~(sizeof(double) - 1);
-						while(n) {
-							*d++ = c;
-							n--;
-						}
-						row += dst->pitch;
-					}
-				} else {
-					/* narrow boxes */
-					for(y = dstrect->h; y; y--) {
-						Uint8 *d = row;
-						Uint8 c = color;
-						int n = x;
-						while(n) {
-							*d++ = c;
-							n--;
-						}
-						row += dst->pitch;
-					}
-				}
-			} else
-#endif /* __powerpc__ */
 			{
 				for (y = dstrect->h; y; y--) {
 					SDL_memset(row, color, x);
