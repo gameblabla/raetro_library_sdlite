@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*******************************************************************************
  * Library       : SDLite 1.2.x
  * Purpose       : Low-level access to a framebuffer, audio output and HID.
@@ -11,8 +12,8 @@
  * Copyright (C) 2020 Paul Cercueil <paul@crapouillou.net>
  * Copyright (C) 2020 João H. Spies <johnnyonflame@hotmail.com>
  *
- * TinyRetroLabs and SDLite 1.2.x:
- * Copyright (c) 2019-2020 Marcus Andrade <boogermann@tinyretrolabs.org>
+ * Rætro and SDLite 1.2.x:
+ * Copyright (c) 2019-2020 Marcus Andrade <marcus@raetro.org>
  *
  * Simple DirectMedia Layer and SDL:
  * Copyright (c) 1997-2012 Sam Lantinga <slouken@libsdl.org>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*******************************************************************************
  * Library       : SDLite 1.2.x
  * Purpose       : Low-level access to a framebuffer, audio output and HID.
@@ -7,8 +8,8 @@
  * License       : GNU General Public License v3.0
  *******************************************************************************
  *
- * TinyRetroLabs and SDLite 1.2.x:
- * Copyright (c) 2019-2020 Marcus Andrade <boogermann@tinyretrolabs.org>
+ * Rætro and SDLite 1.2.x:
+ * Copyright (c) 2019-2020 Marcus Andrade <marcus@raetro.org>
  *
  * Simple DirectMedia Layer and SDL:
  * Copyright (c) 1997-2012 Sam Lantinga <slouken@libsdl.org>
@@ -275,8 +276,7 @@ void SDL_Error(SDL_errorcode code) {
 }
 
 #ifdef TEST_ERROR
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	char buffer[BUFSIZ+1];
 
 	SDL_SetError("Hi there!");

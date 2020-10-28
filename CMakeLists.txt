@@ -95,6 +95,8 @@ add_executable(sdlite_dirty
 			   src/cdrom/linux/SDL_syscdrom.c
 			   src/cdrom/SDL_cdrom.c
 			   src/cdrom/SDL_syscdrom.h
+			   src/core/linux/SDL_udev.c
+			   src/core/linux/SDL_udev.h
 			   src/cpuinfo/SDL_cpuinfo.c
 			   src/events/SDL_active.c
 			   src/events/SDL_events.c
@@ -109,7 +111,9 @@ add_executable(sdlite_dirty
 			   src/filesystem/dummy/SDL_sysfilesystem.c
 			   src/filesystem/unix/SDL_sysfilesystem.c
 			   src/haptic/dummy/SDL_syshaptic.c
+			   src/haptic/linux/SDL_syshaptic.c
 			   src/haptic/SDL_haptic.c
+			   src/haptic/SDL_haptic_c.h
 			   src/haptic/SDL_syshaptic.h
 			   src/joystick/dummy/SDL_sysjoystick.c
 			   src/joystick/linux/SDL_sysjoystick.c

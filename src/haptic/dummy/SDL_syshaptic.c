@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*******************************************************************************
  * Library       : SDLite 1.2.x
  * Purpose       : Low-level access to a framebuffer, audio output and HID.
@@ -7,8 +8,8 @@
  * License       : GNU General Public License v3.0
  *******************************************************************************
  *
- * TinyRetroLabs and SDLite 1.2.x:
- * Copyright (c) 2019-2020 Marcus Andrade <boogermann@tinyretrolabs.org>
+ * Rætro and SDLite 1.2.x:
+ * Copyright (c) 2019-2020 Marcus Andrade <marcus@raetro.org>
  *
  * Simple DirectMedia Layer and SDL:
  * Copyright (c) 2008 Edgar Simo
@@ -32,6 +33,8 @@
 
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
+
+#if defined(SDL_HAPTIC_DUMMY) || defined(SDL_HAPTIC_DISABLED)
 
 static int SDL_SYS_LogicError(void) {
 	SDL_SetError("Logic error: No haptic devices available.");
@@ -135,3 +138,4 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic) {
 	return -1;
 }
 
+#endif /* SDL_HAPTIC_DUMMY || SDL_HAPTIC_DISABLED */
