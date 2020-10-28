@@ -1,0 +1,281 @@
+cmake_minimum_required(VERSION 3.13)
+project(sdlite_dirty C)
+
+set(CMAKE_C_STANDARD 11)
+
+include_directories(include)
+include_directories(src)
+include_directories(src/audio)
+include_directories(src/audio/alsa)
+include_directories(src/audio/dummy)
+include_directories(src/audio/oss)
+include_directories(src/audio/pulse)
+include_directories(src/cdrom)
+include_directories(src/events)
+include_directories(src/haptic)
+include_directories(src/joystick)
+include_directories(src/libm)
+include_directories(src/power)
+include_directories(src/thread)
+include_directories(src/thread/generic)
+include_directories(src/thread/pth)
+include_directories(src/thread/pthread)
+include_directories(src/timer)
+include_directories(src/video)
+include_directories(src/video/arm)
+include_directories(src/video/dummy)
+include_directories(src/video/fbcon)
+include_directories(src/video/kmsdrm)
+include_directories(test)
+
+add_executable(sdlite_dirty
+			   include/begin_code.h
+			   include/close_code.h
+			   include/SDL.h
+			   include/SDL_active.h
+			   include/SDL_audio.h
+			   include/SDL_byteorder.h
+			   include/SDL_cdrom.h
+			   include/SDL_config.h
+			   include/SDL_config_minimal.h
+			   include/SDL_copying.h
+			   include/SDL_cpuinfo.h
+			   include/SDL_endian.h
+			   include/SDL_error.h
+			   include/SDL_events.h
+			   include/SDL_filesystem.h
+			   include/SDL_getenv.h
+			   include/SDL_haptic.h
+			   include/SDL_joystick.h
+			   include/SDL_keyboard.h
+			   include/SDL_keysym.h
+			   include/SDL_loadso.h
+			   include/SDL_log.h
+			   include/SDL_main.h
+			   include/SDL_mouse.h
+			   include/SDL_mutex.h
+			   include/SDL_name.h
+			   include/SDL_opengl.h
+			   include/SDL_pixels.h
+			   include/SDL_platform.h
+			   include/SDL_power.h
+			   include/SDL_quit.h
+			   include/SDL_revision.h
+			   include/SDL_rwops.h
+			   include/SDL_stdinc.h
+			   include/SDL_syswm.h
+			   include/SDL_thread.h
+			   include/SDL_timer.h
+			   include/SDL_types.h
+			   include/SDL_version.h
+			   include/SDL_video.h
+			   src/audio/alsa/SDL_alsa_audio.c
+			   src/audio/alsa/SDL_alsa_audio.h
+			   src/audio/dummy/SDL_dummyaudio.c
+			   src/audio/dummy/SDL_dummyaudio.h
+			   src/audio/oss/SDL_dmaaudio.c
+			   src/audio/oss/SDL_dmaaudio.h
+			   src/audio/oss/SDL_dspaudio.c
+			   src/audio/oss/SDL_dspaudio.h
+			   src/audio/pulse/SDL_pulseaudio.c
+			   src/audio/pulse/SDL_pulseaudio.h
+			   src/audio/SDL_audio.c
+			   src/audio/SDL_audio_c.h
+			   src/audio/SDL_audiocvt.c
+			   src/audio/SDL_audiodev.c
+			   src/audio/SDL_audiodev_c.h
+			   src/audio/SDL_audiomem.h
+			   src/audio/SDL_mixer.c
+			   src/audio/SDL_mixer_arm.c
+			   src/audio/SDL_mixer_arm.h
+			   src/audio/SDL_sysaudio.h
+			   src/audio/SDL_wave.c
+			   src/audio/SDL_wave.h
+			   src/cdrom/dummy/SDL_syscdrom.c
+			   src/cdrom/linux/SDL_syscdrom.c
+			   src/cdrom/SDL_cdrom.c
+			   src/cdrom/SDL_syscdrom.h
+			   src/cpuinfo/SDL_cpuinfo.c
+			   src/events/SDL_active.c
+			   src/events/SDL_events.c
+			   src/events/SDL_events_c.h
+			   src/events/SDL_expose.c
+			   src/events/SDL_keyboard.c
+			   src/events/SDL_mouse.c
+			   src/events/SDL_quit.c
+			   src/events/SDL_resize.c
+			   src/events/SDL_sysevents.h
+			   src/file/SDL_rwops.c
+			   src/filesystem/dummy/SDL_sysfilesystem.c
+			   src/filesystem/unix/SDL_sysfilesystem.c
+			   src/haptic/dummy/SDL_syshaptic.c
+			   src/haptic/SDL_haptic.c
+			   src/haptic/SDL_syshaptic.h
+			   src/joystick/dummy/SDL_sysjoystick.c
+			   src/joystick/linux/SDL_sysjoystick.c
+			   src/joystick/SDL_joystick.c
+			   src/joystick/SDL_joystick_c.h
+			   src/joystick/SDL_sysjoystick.h
+			   src/libm/e_log.h
+			   src/libm/e_pow.h
+			   src/libm/e_sqrt.h
+			   src/libm/math_private.h
+			   src/loadso/dlopen/SDL_sysloadso.c
+			   src/loadso/dummy/SDL_sysloadso.c
+			   src/main/dummy/SDL_dummy_main.c
+			   src/power/linux/SDL_syspower.c
+			   src/power/SDL_power.c
+			   src/power/SDL_syspower.h
+			   src/stdlib/SDL_getenv.c
+			   src/stdlib/SDL_iconv.c
+			   src/stdlib/SDL_malloc.c
+			   src/stdlib/SDL_qsort.c
+			   src/stdlib/SDL_stdlib.c
+			   src/stdlib/SDL_string.c
+			   src/thread/generic/SDL_syscond.c
+			   src/thread/generic/SDL_sysmutex.c
+			   src/thread/generic/SDL_sysmutex_c.h
+			   src/thread/generic/SDL_syssem.c
+			   src/thread/generic/SDL_systhread.c
+			   src/thread/generic/SDL_systhread_c.h
+			   src/thread/pth/SDL_syscond.c
+			   src/thread/pth/SDL_sysmutex.c
+			   src/thread/pth/SDL_sysmutex_c.h
+			   src/thread/pth/SDL_systhread.c
+			   src/thread/pth/SDL_systhread_c.h
+			   src/thread/pthread/SDL_syscond.c
+			   src/thread/pthread/SDL_sysmutex.c
+			   src/thread/pthread/SDL_sysmutex_c.h
+			   src/thread/pthread/SDL_syssem.c
+			   src/thread/pthread/SDL_systhread.c
+			   src/thread/pthread/SDL_systhread_c.h
+			   src/thread/SDL_systhread.h
+			   src/thread/SDL_thread.c
+			   src/thread/SDL_thread_c.h
+			   src/timer/dummy/SDL_systimer.c
+			   src/timer/unix/SDL_systimer.c
+			   src/timer/SDL_systimer.h
+			   src/timer/SDL_timer.c
+			   src/timer/SDL_timer_c.h
+			   src/video/arm/pixman-arm-asm.h
+			   src/video/arm/pixman-arm-neon-asm.h
+			   src/video/arm/pixman-arm-simd-asm.h
+			   src/video/arm/pixman-arma64-neon-asm.h
+			   src/video/dummy/SDL_nullevents.c
+			   src/video/dummy/SDL_nullevents_c.h
+			   src/video/dummy/SDL_nullmouse.c
+			   src/video/dummy/SDL_nullmouse_c.h
+			   src/video/dummy/SDL_nullvideo.c
+			   src/video/dummy/SDL_nullvideo.h
+			   src/video/fbcon/SDL_fbevents.c
+			   src/video/fbcon/SDL_fbevents_c.h
+			   src/video/fbcon/SDL_fbkeys.h
+			   src/video/fbcon/SDL_fbmouse.c
+			   src/video/fbcon/SDL_fbmouse_c.h
+			   src/video/fbcon/SDL_fbvideo.c
+			   src/video/fbcon/SDL_fbvideo.h
+			   src/video/fbcon/SDL_osmesa.c
+			   src/video/fbcon/SDL_osmesa.h
+			   src/video/kmsdrm/SDL_kmsdrmcolordef.c
+			   src/video/kmsdrm/SDL_kmsdrmcolordef.h
+			   src/video/kmsdrm/SDL_kmsdrmevents.c
+			   src/video/kmsdrm/SDL_kmsdrmevents_c.h
+			   src/video/kmsdrm/SDL_kmsdrmmisc.c
+			   src/video/kmsdrm/SDL_kmsdrmmisc_c.h
+			   src/video/kmsdrm/SDL_kmsdrmvideo.c
+			   src/video/kmsdrm/SDL_kmsdrmvideo.h
+			   src/video/blank_cursor.h
+			   src/video/default_cursor.h
+			   src/video/SDL_blit.c
+			   src/video/SDL_blit.h
+			   src/video/SDL_blit_0.c
+			   src/video/SDL_blit_1.c
+			   src/video/SDL_blit_A.c
+			   src/video/SDL_blit_N.c
+			   src/video/SDL_bmp.c
+			   src/video/SDL_cursor.c
+			   src/video/SDL_cursor_c.h
+			   src/video/SDL_gamma.c
+			   src/video/SDL_glfuncs.h
+			   src/video/SDL_leaks.h
+			   src/video/SDL_pixels.c
+			   src/video/SDL_pixels_c.h
+			   src/video/SDL_RLEaccel.c
+			   src/video/SDL_RLEaccel_c.h
+			   src/video/SDL_stretch.c
+			   src/video/SDL_stretch_c.h
+			   src/video/SDL_surface.c
+			   src/video/SDL_sysvideo.h
+			   src/video/SDL_video.c
+			   src/video/SDL_yuv.c
+			   src/video/SDL_yuv_sw.c
+			   src/video/SDL_yuv_sw_c.h
+			   src/video/SDL_yuvfuncs.h
+			   src/SDL.c
+			   src/SDL_error.c
+			   src/SDL_error_c.h
+			   src/SDL_fatal.c
+			   src/SDL_fatal.h
+			   src/SDL_log.c
+			   test/test/SDL_test_assert.c
+			   test/test/SDL_test_common.c
+			   test/test/SDL_test_compare.c
+			   test/test/SDL_test_crc32.c
+			   test/test/SDL_test_font.c
+			   test/test/SDL_test_fuzzer.c
+			   test/test/SDL_test_harness.c
+			   test/test/SDL_test_imageBlit.c
+			   test/test/SDL_test_imageBlitBlend.c
+			   test/test/SDL_test_imageFace.c
+			   test/test/SDL_test_imagePrimitives.c
+			   test/test/SDL_test_imagePrimitivesBlend.c
+			   test/test/SDL_test_log.c
+			   test/test/SDL_test_md5.c
+			   test/test/SDL_test_memory.c
+			   test/test/SDL_test_random.c
+			   test/checkkeys.c
+			   test/common.c
+			   test/common.h
+			   test/graywin.c
+			   test/loopwave.c
+			   test/testalpha.c
+			   test/testaudioinfo.c
+			   test/testbitmap.c
+			   test/testblitspeed.c
+			   test/testcdrom.c
+			   test/testcursor.c
+			   test/testdraw2.c
+			   test/testdyngl.c
+			   test/testdyngles.c
+			   test/testerror.c
+			   test/testfile.c
+			   test/testfilesystem.c
+			   test/testgamma.c
+			   test/testgl.c
+			   test/testgl2.c
+			   test/testgles.c
+			   test/testhaptic.c
+			   test/testhread.c
+			   test/testiconv.c
+			   test/testintersections.c
+			   test/testjoystick.c
+			   test/testkeys.c
+			   test/testloadso.c
+			   test/testlock.c
+			   test/testmmousetablet.c
+			   test/testmultiaudio.c
+			   test/testoverlay.c
+			   test/testoverlay2.c
+			   test/testpalette.c
+			   test/testplatform.c
+			   test/testpower.c
+			   test/testresample.c
+			   test/testsem.c
+			   test/testsprite.c
+			   test/testtimer.c
+			   test/testver.c
+			   test/testvidinfo.c
+			   test/testwin.c
+			   test/testwm.c
+			   test/threadwin.c
+			   test/torturethread.c)

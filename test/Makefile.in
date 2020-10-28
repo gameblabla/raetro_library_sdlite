@@ -1,0 +1,129 @@
+# Makefile to build the SDL tests
+
+srcdir  = @srcdir@
+objects = build
+
+CC      = @CC@
+CFLAGS  = @CFLAGS@
+LIBS	= @LIBS@
+
+TARGETS = checkkeys graywin loopwave testalpha testbitmap testpower testblitspeed testcdrom testcursor testpower testdyngl testerror testfile testfilesystem testgamma testgl testgles testhread testiconv testjoystick testkeys testlock testoverlay2 testoverlay testpalette testplatform testsem testsprite testtimer testver testvidinfo testwin testwm threadwin torturethread testloadso
+
+all: $(TARGETS)
+
+checkkeys: $(srcdir)/checkkeys.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+graywin: $(srcdir)/graywin.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+loopwave: $(srcdir)/loopwave.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testalpha: $(srcdir)/testalpha.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @MATHLIB@
+
+testbitmap: $(srcdir)/testbitmap.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testblitspeed: $(srcdir)/testblitspeed.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testcdrom: $(srcdir)/testcdrom.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testcursor: $(srcdir)/testcursor.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testdyngl: $(srcdir)/testdyngl.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testerror: $(srcdir)/testerror.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testfile: $(srcdir)/testfile.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testfilesystem: $(srcdir)/testfilesystem.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testgamma: $(srcdir)/testgamma.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @MATHLIB@
+
+testgl: $(srcdir)/testgl.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @GLLIB@ @MATHLIB@
+
+testgles: $(srcdir)/testgles.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
+
+testhread: $(srcdir)/testhread.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testiconv: $(srcdir)/testiconv.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testjoystick: $(srcdir)/testjoystick.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testpower: $(srcdir)/testpower.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testkeys: $(srcdir)/testkeys.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testlock: $(srcdir)/testlock.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testoverlay2: $(srcdir)/testoverlay2.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testoverlay: $(srcdir)/testoverlay.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testpalette: $(srcdir)/testpalette.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @MATHLIB@
+
+testplatform: $(srcdir)/testplatform.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testsem: $(srcdir)/testsem.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testsprite: $(srcdir)/testsprite.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @MATHLIB@
+
+testsprite2$(EXE): $(srcdir)/testsprite2.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @MATHLIB@
+
+testtimer: $(srcdir)/testtimer.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testver: $(srcdir)/testver.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testvidinfo: $(srcdir)/testvidinfo.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testwin: $(srcdir)/testwin.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testwm: $(srcdir)/testwm.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+threadwin: $(srcdir)/threadwin.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+torturethread: $(srcdir)/torturethread.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+testloadso: $(srcdir)/testloadso.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
+
+clean:
+	rm -f $(TARGETS)
+
+distclean: clean
+	rm -f Makefile
+	rm -f config.status config.cache config.log
+	rm -rf $(srcdir)/autom4te*
