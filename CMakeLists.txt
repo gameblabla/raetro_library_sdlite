@@ -97,6 +97,8 @@ add_executable(sdlite_dirty
 			   src/cdrom/SDL_syscdrom.h
 			   src/core/linux/SDL_udev.c
 			   src/core/linux/SDL_udev.h
+			   src/core/unix/SDL_poll.c
+			   src/core/unix/SDL_poll.h
 			   src/cpuinfo/SDL_cpuinfo.c
 			   src/events/SDL_active.c
 			   src/events/SDL_events.c

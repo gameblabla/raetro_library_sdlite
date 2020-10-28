@@ -225,6 +225,10 @@
 #define HAVE_STDINT_H 1
 #endif /* HAVE_LIBC */
 
+#undef HAVE_DBUS_DBUS_H
+#undef HAVE_LIBSAMPLERATE_H
+#undef HAVE_LIBUDEV_H
+
 #undef DEBUG
 #undef DEBUG_ASM
 #undef DEBUG_AUDIO
@@ -283,7 +287,8 @@
 
 /* Enable haptic subsystem drivers */
 #undef SDL_HAPTIC_DUMMY
-#undef SDL_HAPTIC_IMMERSION
+#undef SDL_HAPTIC_LINUX
+
 
 /* Enable various shared object loading systems */
 #undef SDL_LOADSO_DLOPEN

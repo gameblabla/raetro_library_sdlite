@@ -12,7 +12,7 @@
  * Copyright (c) 2019-2020 Marcus Andrade <marcus@raetro.org>
  *
  * Simple DirectMedia Layer and SDL:
- * Copyright (c) 1997-2012 Sam Lantinga <slouken@libsdl.org>
+ * Copyright (c) 1997-2020 Sam Lantinga <slouken@libsdl.org>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,10 @@
 #include <sys/ioctl.h>
 #include <limits.h>        /* For the definition of PATH_MAX */
 #include <linux/joystick.h>
+
+#include "../SDL_sysjoystick.h"
+#include "../SDL_joystick_c.h"
+#include "SDL_sysjoystick_c.h"
 
 #if SDL_INPUT_LINUXEV
 
@@ -279,29 +283,29 @@ static struct {
 #endif /* USE_LOGICAL_JOYSTICKS */
 } SDL_joylist[MAX_JOYSTICKS];
 
-/* The private structure used to keep track of a joystick */
-struct joystick_hwdata {
-	int fd;
-	/* The current linux joystick driver maps hats to two axes */
-	struct hwdata_hat {
-		int axis[2];
-	} *hats;
-	/* The current linux joystick driver maps balls to two axes */
-	struct hwdata_ball {
-		int axis[2];
-	} *balls;
-
-	/* Support for the Linux 2.4 unified input interface */
-#if SDL_INPUT_LINUXEV
-	SDL_bool is_hid;
-	Uint8 key_map[KEY_MAX - BTN_MISC];
-	Uint8 abs_map[ABS_MAX];
-	struct axis_correct {
-		int used;
-		int coef[3];
-	} abs_correct[ABS_MAX];
-#endif
-};
+///* The private structure used to keep track of a joystick */
+//struct joystick_hwdata {
+//	int fd;
+//	/* The current linux joystick driver maps hats to two axes */
+//	struct hwdata_hat {
+//		int axis[2];
+//	} *hats;
+//	/* The current linux joystick driver maps balls to two axes */
+//	struct hwdata_ball {
+//		int axis[2];
+//	} *balls;
+//
+//	/* Support for the Linux 2.4 unified input interface */
+//#if SDL_INPUT_LINUXEV
+//	SDL_bool is_hid;
+//	Uint8 key_map[KEY_MAX - BTN_MISC];
+//	Uint8 abs_map[ABS_MAX];
+//	struct axis_correct {
+//		int used;
+//		int coef[3];
+//	} abs_correct[ABS_MAX];
+//#endif
+//};
 
 #ifndef NO_LOGICAL_JOYSTICKS
 
@@ -531,9 +535,9 @@ const char *SDL_SYS_JoystickName(int index) {
 	fd = open(SDL_joylist[index].fname, O_RDONLY, 0);
 	if(fd >= 0) {
 		if(
-		#if SDL_INPUT_LINUXEV
+			#if SDL_INPUT_LINUXEV
 			(ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) <= 0) &&
-		#endif
+			#endif
 			(ioctl(fd, JSIOCGNAME(sizeof(namebuf)), namebuf) <= 0)) {
 			name = SDL_joylist[index].fname;
 		} else {
@@ -726,10 +730,11 @@ static SDL_bool EV_ConfigJoystick(SDL_Joystick *joystick, int fd) {
 					joystick->hwdata->abs_correct[i].used = 1;
 					joystick->hwdata->abs_correct[i].coef[0] = (absinfo.maximum + absinfo.minimum) / 2 - absinfo.flat;
 					joystick->hwdata->abs_correct[i].coef[1] = (absinfo.maximum + absinfo.minimum) / 2 + absinfo.flat;
-					if (absinfo.maximum > absinfo.minimum)
+					if(absinfo.maximum > absinfo.minimum) {
 						t = ((absinfo.maximum - absinfo.minimum) / 2 - 2 * absinfo.flat);
-					else
+					} else {
 						t = ((absinfo.maximum - absinfo.minimum) / 2 + 2 * absinfo.flat);
+					}
 					if(t != 0) {
 						joystick->hwdata->abs_correct[i].coef[2] = (1 << 29) / t;
 					} else {

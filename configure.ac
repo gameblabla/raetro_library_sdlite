@@ -201,8 +201,8 @@ AC_ARG_ENABLE([pth],               [AS_HELP_STRING([--enable-pth],              
 dnl ###################################################################################
 AC_ARG_ENABLE([rpath],             [AS_HELP_STRING([--disable-rpath],            [Disable rpath when Linking SDL])],                   [enable_rpath=$enableval],         [enable_rpath=yes])
 AC_ARG_ENABLE([sdl-dlopen],        [AS_HELP_STRING([--disable-sdl-dlopen],       [Disable dlopen for Shared Object loading])],         [enable_sdl_dlopen=$enableval],    [enable_sdl_dlopen=yes])
-AC_ARG_ENABLE([alsa-shared],       [AS_HELP_STRING([--enable-alsa-shared],       [Disable Dynamically load ALSA support])],            [enable_oss=$enableval],           [enable_alsa_shared=yes])
-AC_ARG_ENABLE([pulseaudio-shared], [AS_HELP_STRING([--enable-pulseaudio-shared], [Disable Dynamically load PulseAudio support])],      [enable_oss=$enableval],           [enable_pulseaudio_shared=yes])
+AC_ARG_ENABLE([alsa-shared],       [AS_HELP_STRING([--disable-alsa-shared],      [Disable Dynamically load ALSA support])],            [enable_oss=$enableval],           [enable_alsa_shared=yes])
+AC_ARG_ENABLE([pulseaudio-shared], [AS_HELP_STRING([--disable-pulseaudio-shared],[Disable Dynamically load PulseAudio support])],      [enable_oss=$enableval],           [enable_pulseaudio_shared=yes])
 dnl ###################################################################################
 AC_ARG_ENABLE([clock_gettime],     [AS_HELP_STRING([--disable-clock_gettime],    [Enable gettimeofday() instead of clock_gettime()])], [enable_clock_gettime=$enableval], [enable_clock_gettime=yes])
 AC_ARG_ENABLE(input-tslib,         [AS_HELP_STRING([--enable-input-tslib],       [Enable Touchscreen library for input])],             [enable_input_tslib=$enableval],   [enable_input_tslib=no])
@@ -213,6 +213,8 @@ AC_ARG_ENABLE([debug],             [AS_HELP_STRING([--enable-debug],            
 AC_ARG_ENABLE([kmsdrm-debug],      [AS_HELP_STRING([--enable-kmsdrm-debug],      [Debug KMSDRM])],                                     [kmsdrm_debug=$enableval],         [kmsdrm_debug=no])
 AC_ARG_WITH([platform],            [AS_HELP_STRING([--with-platform],            [Use Pre-configured Settings for SoC Boards])],       [use_platform=$withval],           [use_platform=none])
 dnl ###################################################################################
+AC_ARG_ENABLE([libudev],           [AS_HELP_STRING([--disable-libudev],          [Disable libudev support])],                          [enable_libudev=$enableval],       [enable_libudev=yes])
+
 
 if test "x$enable_libc" = "xyes"; then
     dnl Check for C library headers,  functions and libraries
@@ -572,7 +574,6 @@ if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
     fi
 fi
 
-
 dnl Set up the Null video driver.
 if test x$enable_video_dummy = xyes; then
     AC_DEFINE(SDL_VIDEO_DRIVER_DUMMY)
@@ -842,6 +843,28 @@ dnl Do this on all platforms, after everything else.
 CheckVisibilityHidden
 CheckWarnAll
 # Verify that we have all the platform specific files we need
+
+if test x$enable_haptic = xyes; then
+    AC_CHECK_HEADERS([linux/input.h], [use_input_events=yes], [use_input_events=no])
+    if test x$use_input_events = xyes; then
+        AC_DEFINE(SDL_HAPTIC_LINUX, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
+        have_haptic=yes
+    fi
+fi
+dnl See if the platform offers libudev for device enumeration and hotplugging.
+if test x$enable_libudev = xyes; then
+    AC_CHECK_HEADER(libudev.h, have_libudev_h_hdr=yes, have_libudev_h_hdr=no)
+    if test x$have_libudev_h_hdr = xyes; then
+        AC_DEFINE(HAVE_LIBUDEV_H, 1, [ ])
+        udev_lib=[`find_lib "libudev.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
+        if test x$udev_lib != x; then
+            echo "-- dynamic udev -> $udev_lib"
+            AC_DEFINE_UNQUOTED(SDL_UDEV_DYNAMIC, "$udev_lib", [ ])
+        fi
+    fi
+fi
+
 if test x$enable_joystick = xyes; then
     if test x$have_joystick != xyes; then
         # Wants joystick subsystem, but doesn't have a platform-specific backend...

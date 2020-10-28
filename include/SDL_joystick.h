@@ -28,11 +28,12 @@
  * If not, see <https://www.gnu.org/licenses/gpl-3.0.html>.
  *
  ******************************************************************************/
-
-/** @file SDL_joystick.h
- *  Include file for SDL joystick event handling
+/**
+ * @file SDL_joystick.h
+ * @note In order to use these functions, SDL_Init() must have been called
+ *       with the SDL_INIT_JOYSTICK flag. This causes SDL to scan the system
+ *       for joysticks, and load appropriate drivers.
  */
-
 #ifndef SDL_joystick_h_
 #define SDL_joystick_h_
 
@@ -45,15 +46,41 @@
 extern "C" {
 #endif
 
-/** @file SDL_joystick.h
- *  @note In order to use these functions, SDL_Init() must have been called
- *        with the SDL_INIT_JOYSTICK flag.  This causes SDL to scan the system
- *        for joysticks, and load appropriate drivers.
- */
 
 /** The joystick structure used to identify an SDL joystick */
 struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
+
+/* A structure that encodes the stable unique id for a joystick device */
+typedef struct {
+	Uint8 data[16];
+} SDL_JoystickGUID;
+
+typedef Sint32 SDL_JoystickID;
+
+typedef enum {
+	SDL_JOYSTICK_TYPE_UNKNOWN,
+	SDL_JOYSTICK_TYPE_GAMECONTROLLER,
+	SDL_JOYSTICK_TYPE_WHEEL,
+	SDL_JOYSTICK_TYPE_ARCADE_STICK,
+	SDL_JOYSTICK_TYPE_FLIGHT_STICK,
+	SDL_JOYSTICK_TYPE_DANCE_PAD,
+	SDL_JOYSTICK_TYPE_GUITAR,
+	SDL_JOYSTICK_TYPE_DRUM_KIT,
+	SDL_JOYSTICK_TYPE_ARCADE_PAD,
+	SDL_JOYSTICK_TYPE_THROTTLE
+} SDL_JoystickType;
+
+typedef enum {
+	SDL_JOYSTICK_POWER_UNKNOWN = -1,
+	SDL_JOYSTICK_POWER_EMPTY,        /* <= 5% */
+	SDL_JOYSTICK_POWER_LOW,          /* <= 20% */
+	SDL_JOYSTICK_POWER_MEDIUM,       /* <= 70% */
+	SDL_JOYSTICK_POWER_FULL,         /* <= 100% */
+	SDL_JOYSTICK_POWER_WIRED,
+	SDL_JOYSTICK_POWER_MAX
+} SDL_JoystickPowerLevel;
+
 
 /* Function prototypes */
 /**
@@ -147,15 +174,15 @@ extern DECLSPEC Sint16 SDLCALL SDL_JoystickGetAxis(SDL_Joystick *joystick, int a
  *  The return value of SDL_JoystickGetHat() is one of the following positions:
  */
 /*@{*/
-#define SDL_HAT_CENTERED    0x00
+#define SDL_HAT_CENTERED  0x00
 #define SDL_HAT_UP        0x01
-#define SDL_HAT_RIGHT        0x02
-#define SDL_HAT_DOWN        0x04
-#define SDL_HAT_LEFT        0x08
-#define SDL_HAT_RIGHTUP        (SDL_HAT_RIGHT|SDL_HAT_UP)
-#define SDL_HAT_RIGHTDOWN    (SDL_HAT_RIGHT|SDL_HAT_DOWN)
-#define SDL_HAT_LEFTUP        (SDL_HAT_LEFT|SDL_HAT_UP)
-#define SDL_HAT_LEFTDOWN    (SDL_HAT_LEFT|SDL_HAT_DOWN)
+#define SDL_HAT_RIGHT     0x02
+#define SDL_HAT_DOWN      0x04
+#define SDL_HAT_LEFT      0x08
+#define SDL_HAT_RIGHTUP   (SDL_HAT_RIGHT|SDL_HAT_UP)
+#define SDL_HAT_RIGHTDOWN (SDL_HAT_RIGHT|SDL_HAT_DOWN)
+#define SDL_HAT_LEFTUP    (SDL_HAT_LEFT|SDL_HAT_UP)
+#define SDL_HAT_LEFTDOWN  (SDL_HAT_LEFT|SDL_HAT_DOWN)
 /*@}*/
 
 /** 

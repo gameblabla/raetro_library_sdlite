@@ -31,10 +31,9 @@
 #include "SDL_config.h"
 
 /* This is the joystick API for Simple DirectMedia Layer */
-
+#include "SDL_mutex.h"
 #include "SDL_events.h"
 #include "SDL_sysjoystick.h"
-#include "SDL_joystick_c.h"
 
 #if !SDL_EVENTS_DISABLED
 
@@ -48,9 +47,20 @@
 #define SDL_Unlock_EventThread()
 #endif
 
+static SDL_JoystickDriver *SDL_joystick_drivers[] = {
+#ifdef SDL_JOYSTICK_LINUX
+	&SDL_LINUX_JoystickDriver,
+#endif
+#if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
+	&SDL_DUMMY_JoystickDriver
+#endif
+};
+
 Uint8 SDL_numjoysticks = 0;
 int SDL_allocatedjoysticks = 0;
 SDL_Joystick **SDL_joysticks = NULL;
+
+static SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 
 int SDL_JoystickInit(void) {
 	int arraylen;
@@ -189,6 +199,42 @@ int SDL_JoystickOpened(int device_index) {
 	return (opened);
 }
 
+void SDL_LockJoysticks(void) {
+	if(SDL_joystick_lock) {
+		SDL_LockMutex(SDL_joystick_lock);
+	}
+}
+
+void SDL_UnlockJoysticks(void) {
+	if(SDL_joystick_lock) {
+		SDL_UnlockMutex(SDL_joystick_lock);
+	}
+}
+
+/*
+ * Get the driver and device index for an API device index
+ * This should be called while the joystick lock is held, to prevent another thread from updating the list
+ */
+SDL_bool SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int *driver_index) {
+	int i, num_joysticks, total_joysticks = 0;
+
+	if(device_index >= 0) {
+		for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+			num_joysticks = SDL_joystick_drivers[i]->GetCount();
+			if(device_index < num_joysticks) {
+				*driver = SDL_joystick_drivers[i];
+				*driver_index = device_index;
+				return SDL_TRUE;
+			}
+			device_index -= num_joysticks;
+			total_joysticks += num_joysticks;
+		}
+	}
+
+	SDL_SetError("There are %d joysticks available", total_joysticks);
+	return SDL_FALSE;
+}
+
 static int ValidJoystick(SDL_Joystick **joystick) {
 	int valid;
 
@@ -199,6 +245,19 @@ static int ValidJoystick(SDL_Joystick **joystick) {
 		valid = 1;
 	}
 	return valid;
+}
+
+SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index, SDL_GamepadMapping *out) {
+	SDL_JoystickDriver *driver;
+	SDL_bool is_ok = SDL_FALSE;
+
+	SDL_LockJoysticks();
+	if(SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+		is_ok = driver->GetGamepadMapping(device_index, out);
+	}
+	SDL_UnlockJoysticks();
+
+	return is_ok;
 }
 
 /*
@@ -406,7 +465,6 @@ void SDL_JoystickQuit(void) {
 		SDL_allocatedjoysticks = 0;
 	}
 }
-
 
 /* These are global for SDL_sysjoystick.c and SDL_events.c */
 

@@ -226,6 +226,10 @@
 #define HAVE_STDINT_H 1
 #endif /* HAVE_LIBC */
 
+/* #undef HAVE_DBUS_DBUS_H */
+/* #undef HAVE_LIBSAMPLERATE_H */
+#define HAVE_LIBUDEV_H 1
+
 /* #undef DEBUG */
 /* #undef DEBUG_ASM */
 /* #undef DEBUG_AUDIO */
@@ -284,7 +288,8 @@
 
 /* Enable haptic subsystem drivers */
 /* #undef SDL_HAPTIC_DUMMY */
-/* #undef SDL_HAPTIC_IMMERSION */
+/* #undef SDL_HAPTIC_LINUX */
+
 
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_DLOPEN 1
@@ -330,7 +335,7 @@
 /* Enable ime support */
 /* #undef SDL_USE_IME */
 /* Enable dynamic udev support */
-/* #undef SDL_UDEV_DYNAMIC */
+#define SDL_UDEV_DYNAMIC "libudev.so.1"
 /* Enable dynamic libusb support */
 /* #undef SDL_LIBUSB_DYNAMIC */
 #endif /* SDL_config_h_ */

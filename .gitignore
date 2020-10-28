@@ -119,4 +119,4 @@ docs/
 doxygen_warn.txt
 SDL.tag
 sdl.pc
-
+test/autom4te.cache

@@ -28,57 +28,66 @@
  * If not, see <https://www.gnu.org/licenses/gpl-3.0.html>.
  *
  ******************************************************************************/
-#ifndef SDL_sysjoystick_c_h_
-#define SDL_sysjoystick_c_h_
+#include "SDL_config.h"
 
-#include <linux/input.h>
+//#include "SDL_assert.h"
+#include "SDL_poll.h"
 
-struct SDL_joylist_item;
+#ifdef HAVE_POLL
 
-/* The private structure used to keep track of a joystick */
-struct joystick_hwdata {
-	int fd;
-	struct SDL_joylist_item *item;
-	SDL_JoystickGUID guid;
-	char *fname;                /* Used in haptic subsystem */
+#include <poll.h>
 
-	SDL_bool ff_rumble;
-	SDL_bool ff_sine;
-	struct ff_effect effect;
-	Uint32 effect_expiration;
+#else
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
-	/* The current Linux joystick driver maps hats to two axes */
-	struct hwdata_hat {
-		int axis[2];
-	} *hats;
-	/* The current Linux joystick driver maps balls to two axes */
-	struct hwdata_ball {
-		int axis[2];
-	} *balls;
+#include <errno.h>
 
-	/* Support for the Linux 2.4 unified input interface */
-	SDL_bool is_hid;
-	Uint8 key_map[KEY_MAX];
-	Uint8 abs_map[ABS_MAX];
-	SDL_bool has_key[KEY_MAX];
-	SDL_bool has_abs[ABS_MAX];
+int SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS) {
+	int result;
 
-	struct axis_correct {
-		int used;
-		int coef[3];
-	} abs_correct[ABS_MAX];
+	/* Note: We don't bother to account for elapsed time if we get EINTR */
+	do {
+#ifdef HAVE_POLL
+		struct pollfd info;
 
-	SDL_bool fresh;
-	SDL_bool recovering_from_dropped;
+		info.fd = fd;
+		if(forWrite) {
+			info.events = POLLOUT;
+		} else {
+			info.events = POLLIN | POLLPRI;
+		}
+		result = poll(&info, 1, timeoutMS);
+#else
+		fd_set rfdset, *rfdp = NULL;
+		fd_set wfdset, *wfdp = NULL;
+		struct timeval tv, *tvp = NULL;
 
-	/* Steam Controller support */
-	SDL_bool m_bSteamController;
-	/* 4 = (ABS_HAT3X-ABS_HAT0X)/2 (see input-event-codes.h in kernel) */
-	int hats_indices[4];
-	SDL_bool has_hat[4];
+		/* If this assert triggers we'll corrupt memory here */
+		SDL_assert(fd >= 0 && fd < FD_SETSIZE);
 
-	/* Set when gamepad is pending removal due to ENODEV read error */
-	SDL_bool gone;
-};
+		if (forWrite) {
+			FD_ZERO(&wfdset);
+			FD_SET(fd, &wfdset);
+			wfdp = &wfdset;
+		} else {
+			FD_ZERO(&rfdset);
+			FD_SET(fd, &rfdset);
+			rfdp = &rfdset;
+		}
 
-#endif /* SDL_sysjoystick_c_h_ */
+		if (timeoutMS >= 0) {
+			tv.tv_sec = timeoutMS / 1000;
+			tv.tv_usec = (timeoutMS % 1000) * 1000;
+			tvp = &tv;
+		}
+
+		result = select(fd + 1, rfdp, wfdp, NULL, tvp);
+#endif /* HAVE_POLL */
+
+	} while (result < 0 && errno == EINTR);
+
+	return result;
+}

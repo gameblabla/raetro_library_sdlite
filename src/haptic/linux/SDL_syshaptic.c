@@ -36,8 +36,8 @@
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
 #include "SDL_joystick.h"
-#include "../../joystick/SDL_sysjoystick.h"     /* For the real SDL_Joystick */
-#include "../../joystick/linux/SDL_sysjoystick_c.h"     /* For joystick hwdata */
+#include "../../joystick/SDL_sysjoystick.h"          /* For the real SDL_Joystick */
+#include "../../joystick/linux/SDL_sysjoystick_c.h"  /* For joystick hwdata */
 #include "../../core/linux/SDL_udev.h"
 
 #include <unistd.h>             /* close */
@@ -175,12 +175,14 @@ int SDL_SYS_HapticInit(void) {
 
 #if SDL_USE_LIBUDEV
 	if (SDL_UDEV_Init() < 0) {
-		return SDL_SetError("Could not initialize UDEV");
+		SDL_SetError("Could not initialize UDEV");
+		return -1;
 	}
 
 	if ( SDL_UDEV_AddCallback(haptic_udev_callback) < 0) {
 		SDL_UDEV_Quit();
-		return SDL_SetError("Could not setup haptic <-> udev callback");
+		SDL_SetError("Could not setup haptic <-> udev callback");
+		return -1;
 	}
 
 	/* Force a scan to build the initial device list */
@@ -535,7 +537,8 @@ int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick) {
 	haptic->index = device_index;
 
 	if(device_index >= MAX_HAPTICS) {
-		return SDL_SetError("Haptic: Joystick doesn't have Haptic capabilities");
+		SDL_SetError("Haptic: Joystick doesn't have Haptic capabilities");
+		return -1;
 	}
 
 	fd = open(joystick->hwdata->fname, O_RDWR, 0);
@@ -902,7 +905,8 @@ int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SD
 	/* Allocate the hardware effect */
 	effect->hweffect = (struct haptic_hweffect *) SDL_malloc(sizeof(struct haptic_hweffect));
 	if(effect->hweffect == NULL) {
-		return SDL_OutOfMemory();
+		SDL_OutOfMemory();
+		return -1;
 	}
 
 	/* Prepare the ff_effect */

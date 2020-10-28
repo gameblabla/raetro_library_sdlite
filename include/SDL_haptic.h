@@ -165,7 +165,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_CONSTANT   (1<<0)
+#define SDL_HAPTIC_CONSTANT   (1u<<0)
 
 /**
  *  \brief Sine wave effect supported.
@@ -174,16 +174,21 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_SINE       (1<<1)
+#define SDL_HAPTIC_SINE       (1u<<1)
 
 /**
- *  \brief Square wave effect supported.
+ *  \brief Left/Right effect supported.
  *
- *  Periodic haptic effect that simulates square waves.
+ *  Haptic effect for direct control over high/low frequency motors.
  *
- *  \sa SDL_HapticPeriodic
+ *  \sa SDL_HapticLeftRight
+ * \warning this value was SDL_HAPTIC_SQUARE right before 2.0.0 shipped. Sorry,
+ *          we ran out of bits, and this is important for XInput devices.
  */
-#define SDL_HAPTIC_SQUARE     (1<<2)
+#define SDL_HAPTIC_LEFTRIGHT     (1u<<2)
+
+/* !!! FIXME: put this back when we have more bits in 2.1 */
+/* #define SDL_HAPTIC_SQUARE     (1<<2) */
 
 /**
  *  \brief Triangle wave effect supported.
@@ -192,7 +197,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_TRIANGLE   (1<<3)
+#define SDL_HAPTIC_TRIANGLE     (1u<<3)
 
 /**
  *  \brief Sawtoothup wave effect supported.
@@ -201,7 +206,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_SAWTOOTHUP (1<<4)
+#define SDL_HAPTIC_SAWTOOTHUP   (1u<<4)
 
 /**
  *  \brief Sawtoothdown wave effect supported.
@@ -210,7 +215,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_SAWTOOTHDOWN (1<<5)
+#define SDL_HAPTIC_SAWTOOTHDOWN (1u<<5)
 
 /**
  *  \brief Ramp effect supported.
@@ -219,7 +224,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticRamp
  */
-#define SDL_HAPTIC_RAMP       (1<<6)
+#define SDL_HAPTIC_RAMP         (1u<<6)
 
 /**
  *  \brief Spring effect supported - uses axes position.
@@ -229,7 +234,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_SPRING     (1<<7)
+#define SDL_HAPTIC_SPRING       (1u<<7)
 
 /**
  *  \brief Damper effect supported - uses axes velocity.
@@ -239,7 +244,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_DAMPER     (1<<8)
+#define SDL_HAPTIC_DAMPER       (1u<<8)
 
 /**
  *  \brief Inertia effect supported - uses axes acceleration.
@@ -249,7 +254,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_INERTIA    (1<<9)
+#define SDL_HAPTIC_INERTIA      (1u<<9)
 
 /**
  *  \brief Friction effect supported - uses axes movement.
@@ -259,16 +264,16 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticCondition
  */
-#define SDL_HAPTIC_FRICTION   (1<<10)
+#define SDL_HAPTIC_FRICTION     (1u<<10)
 
 /**
  *  \brief Custom effect is supported.
  *
  *  User defined custom haptic effect.
  */
-#define SDL_HAPTIC_CUSTOM     (1<<11)
+#define SDL_HAPTIC_CUSTOM       (1u<<11)
 
-/*@}*//*Haptic effects*/
+/* @} *//* Haptic effects */
 
 /* These last few are features the device has, not effects */
 
@@ -279,7 +284,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticSetGain
  */
-#define SDL_HAPTIC_GAIN       (1<<12)
+#define SDL_HAPTIC_GAIN         (1u<<12)
 
 /**
  *  \brief Device can set autocenter.
@@ -288,25 +293,26 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticSetAutocenter
  */
-#define SDL_HAPTIC_AUTOCENTER (1<<13)
+#define SDL_HAPTIC_AUTOCENTER   (1u<<13)
 
 /**
  *  \brief Device can be queried for effect status.
  *
- *  Device can be queried for effect status.
+ *  Device supports querying effect status.
  *
  *  \sa SDL_HapticGetEffectStatus
  */
-#define SDL_HAPTIC_STATUS     (1<<14)
+#define SDL_HAPTIC_STATUS       (1u<<14)
 
 /**
  *  \brief Device can be paused.
  *
+ *  Devices supports being paused.
+ *
  *  \sa SDL_HapticPause
  *  \sa SDL_HapticUnpause
  */
-#define SDL_HAPTIC_PAUSE      (1<<15)
-
+#define SDL_HAPTIC_PAUSE        (1u<<15)
 
 /**
  * \name Direction encodings
@@ -334,6 +340,13 @@ typedef struct _SDL_Haptic SDL_Haptic;
  */
 #define SDL_HAPTIC_SPHERICAL  2
 
+/**
+ *  \brief Use this value to play an effect on the steering wheel axis. This
+ *  provides better compatibility across platforms and devices as SDL will guess
+ *  the correct axis.
+ *  \sa SDL_HapticDirection
+ */
+#define SDL_HAPTIC_STEERING_AXIS 3
 /*@}*//*Direction encodings*/
 
 /*@}*//*Haptic features*/
@@ -649,6 +662,30 @@ typedef struct SDL_HapticRamp {
 } SDL_HapticRamp;
 
 /**
+ * \brief A structure containing a template for a Left/Right effect.
+ *
+ * This struct is exclusively for the ::SDL_HAPTIC_LEFTRIGHT effect.
+ *
+ * The Left/Right effect is used to explicitly control the large and small
+ * motors, commonly found in modern game controllers. The small (right) motor
+ * is high frequency, and the large (left) motor is low frequency.
+ *
+ * \sa SDL_HAPTIC_LEFTRIGHT
+ * \sa SDL_HapticEffect
+ */
+typedef struct SDL_HapticLeftRight {
+	/* Header */
+	Uint16 type;            /**< ::SDL_HAPTIC_LEFTRIGHT */
+
+	/* Replay */
+	Uint32 length;          /**< Duration of the effect in milliseconds. */
+
+	/* Rumble */
+	Uint16 large_magnitude; /**< Control of the large controller motor. */
+	Uint16 small_magnitude; /**< Control of the small controller motor. */
+} SDL_HapticLeftRight;
+
+/**
  *  \brief A structure containing a template for the ::SDL_HAPTIC_CUSTOM effect.
  *
  *  A custom force feedback effect is much like a periodic effect, where the
@@ -762,6 +799,7 @@ typedef union SDL_HapticEffect {
 	SDL_HapticPeriodic periodic;    /**< Periodic effect. */
 	SDL_HapticCondition condition;  /**< Condition effect. */
 	SDL_HapticRamp ramp;            /**< Ramp effect. */
+	SDL_HapticLeftRight leftright;  /**< Left/Right effect. */
 	SDL_HapticCustom custom;        /**< Custom effect. */
 } SDL_HapticEffect;
 
@@ -1131,5 +1169,3 @@ extern DECLSPEC int SDLCALL SDL_HapticStopAll(SDL_Haptic *haptic);
 #include "close_code.h"
 
 #endif /* _SDL_haptic_h */
-
-/* vi: set ts=4 sw=4 expandtab: */
