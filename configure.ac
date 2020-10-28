@@ -35,20 +35,31 @@ AC_CONFIG_HEADER(include/SDL_config.h)
 AC_GNU_SOURCE
 AC_CONFIG_AUX_DIRS($srcdir/build-scripts)
 
-dnl Set various version strings - taken gratefully from the GTk sources
-#
-# Making releases:
-# Edit include/SDL/SDL_version.h and change the version, then:
-#   SDL_MICRO_VERSION += 1;
-#   SDL_INTERFACE_AGE += 1;
-#   SDL_BINARY_AGE += 1;
-# if any functions have been added, set SDL_INTERFACE_AGE to 0.
-# if backwards compatibility has been broken,
-# set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
-#
-AC_PREFIX_DEFAULT(/usr)
+dnl ###################################################################################
+dnl check for GIT_REV
+dnl ###################################################################################
+SDL_GIT_REF="UNKNOWN"
+SDL_MICRO_REVISION=$(date -u +"%m%d")
+AC_CHECK_PROG([HAVE_GIT],[git],[yes],[no],)
+if test "x$HAVE_GIT" = "xyes" -a -d ${srcdir}/.git; then
+    SDL_MICRO_REVISION=$(git --no-pager log -n 1 --pretty='format:%cd' --date=format:'%m%d' HEAD)
+    SDL_GIT_REF=$(git --no-pager log --pretty=format:"%h" -n 1 HEAD)
+fi
+dnl ###################################################################################
+dnl SDLite versioning
+dnl Edit include/SDL_version.h to change SDLite version, then:
+dnl ###################################################################################
+dnl Making releases:
+dnl major and minor version is fixed and should not be changed.
 SDL_MAJOR_VERSION=1
 SDL_MINOR_VERSION=2
+dnl ###################################################################################
+dnl if any functions have been added, set INTERFACE_AGE to 0.
+dnl if BC has been broken, set BINARY_AGE and INTERFACE_AGE to 0.
+dnl   SDL_MICRO_VERSION = YY;
+dnl   SDL_INTERFACE_AGE += 1;
+dnl   SDL_BINARY_AGE += 1;
+dnl ###################################################################################
 SDL_MICRO_VERSION=16
 SDL_INTERFACE_AGE=5
 SDL_BINARY_AGE=16
@@ -61,9 +72,6 @@ AC_SUBST(SDL_INTERFACE_AGE)
 AC_SUBST(SDL_BINARY_AGE)
 AC_SUBST(SDL_VERSION)
 
-# libtool versioning
-# LT_INIT([win32-dll])
-
 LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
 LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
 LT_REVISION=$SDL_INTERFACE_AGE
@@ -75,16 +83,6 @@ AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
-dnl Detect the canonical build and host environments
-AC_CONFIG_AUX_DIR([build-scripts])
-dnl AC_CANONICAL_HOST
-AC_C_BIGENDIAN
-if test x$ac_cv_c_bigendian = xyes; then
-    AC_DEFINE(SDL_BYTEORDER, 4321)
-else
-    AC_DEFINE(SDL_BYTEORDER, 1234)
-fi
-
 dnl Check for tools
 AC_PROG_LIBTOOL
 AC_PROG_CC
@@ -92,67 +90,66 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
-dnl Set up the compiler and linker flags
-INCLUDE="-I$srcdir/include"
-if test x$srcdir != x.; then
-    # Remove SDL_config.h from the source directory, since it's the
-    # default one, and we want to include the one that we generate.
-    if test -f $srcdir/include/SDL_config.h; then
-        rm $srcdir/include/SDL_config.h
-    fi
-    INCLUDE="-Iinclude $INCLUDE"
-fi
-case "$host" in
-    *-*-cygwin*)
-        # We build SDL on cygwin without the UNIX emulation layer
-        BASE_CFLAGS="-I/usr/include/mingw -mno-cygwin"
-        BASE_LDFLAGS="-mno-cygwin"
-        ;;
-    *)
-        BASE_CFLAGS="-D_GNU_SOURCE=1"
-        BASE_LDFLAGS=""
-        ;;
-esac
-BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
-EXTRA_CFLAGS="$INCLUDE $BASE_CFLAGS"
-BUILD_LDFLAGS="$LDFLAGS"
-EXTRA_LDFLAGS="$BASE_LDFLAGS"
-## These are common directories to find software packages
-#for path in /usr/freeware /usr/pkg /usr/X11R6 /usr/local; do
-#    if test -d $path/include; then
-#        EXTRA_CFLAGS="$EXTRA_CFLAGS -I$path/include"
-#    fi
-#    if test -d $path/lib; then
-#        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$path/lib"
-#    fi
-#done
-SDL_CFLAGS="$BASE_CFLAGS"
-SDL_LIBS="-lSDL $BASE_LDFLAGS"
-CPPFLAGS="$CPPFLAGS $EXTRA_CFLAGS"
-CFLAGS="$CFLAGS $EXTRA_CFLAGS"
-LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS"
+dnl ###################################################################################
+dnl Check for tools
+dnl ###################################################################################
+AC_CANONICAL_HOST
+AC_PROG_LIBTOOL
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+dnl ###################################################################################
+dnl Check for compiler characteristics
+dnl ###################################################################################
+AC_C_CONST
+AC_C_INLINE
+AC_C_VOLATILE
+AC_C_BIGENDIAN
+dnl ###################################################################################
+dnl Host Detection and Setup
+dnl ###################################################################################
 
+dnl ###################################################################################
+dnl Detect system endian
+dnl ###################################################################################
+if test "x$ac_cv_c_bigendian" = "xyes"; then
+    AC_DEFINE([SDL_BYTEORDER], [4321],[Define if supporting big endian])
+else
+    AC_DEFINE([SDL_BYTEORDER], [1234],[Define if supporting little endian])
+fi
+dnl ###################################################################################
+dnl Helper Functions
+dnl ###################################################################################
 dnl set this to use on systems that use lib64 instead of lib
 base_libdir=`echo \${libdir} | sed 's/.*\/\(.*\)/\1/; q'`
-
 dnl Function to find a library in the compiler search path
-find_lib()
-{
+find_lib() {
     gcc_bin_path=[`$CC -print-search-dirs 2>/dev/null | fgrep programs: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`]
     gcc_lib_path=[`$CC -print-search-dirs 2>/dev/null | fgrep libraries: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`]
     env_lib_path=[`echo $LIBS $LDFLAGS $* | sed 's/-L[ ]*//g'`]
-    if test "$cross_compiling" = yes; then
+    AC_MSG_RESULT([------------------------->>>>>    FINDING LIB    <<<<<-------------------------])
+    if test "x$cross_compiling" = yes; then
         host_lib_path=""
     else
         host_lib_path="/usr/$base_libdir /usr/local/$base_libdir"
     fi
     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
         lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -1`]
-        if test x$lib != x; then
+        if test x$lib != "x"; then
             echo $lib
             return
         fi
     done
+    # Try again, this time allowing more than one version digit after the .so
+    for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
+        lib=[`ls -- $path/$1 2>/dev/null | sed -e 's,.*/,,' | sort | tail -1`]
+        if test x$lib != "x"; then
+            echo $lib
+            return
+        fi
+    done
+    AC_MSG_RESULT([------------------------->>>>>    END: FINDING    <<<<<-------------------------])
 }
 
 dnl Check for compiler characteristics
@@ -162,60 +159,56 @@ AC_C_VOLATILE
 AC_C_BIGENDIAN
 
 dnl ###################################################################################
+dnl Set Include Directory
+dnl ###################################################################################
+dnl Add top source directory for all builds so we can use config.h
+INCLUDE="-I\$(srcdir)/include"
+if test "x$srcdir" != "x."; then
+    # Remove SDL_config.h to generate a new one.
+    if test -f $srcdir/include/SDL_config.h; then
+        rm $srcdir/include/SDL_config.h
+    fi
+    INCLUDE="-Iinclude $INCLUDE"
+fi
+dnl ###################################################################################
+dnl Set up the compiler and linker flags
+dnl ###################################################################################
+PASSED_CFLAGS=$CFLAGS # Hack to override autoconf default values
+PASSED_CPPFLAGS=$CPPFLAGS # Hack to override autoconf default values
+
+BASE_CFLAGS="-D_GNU_SOURCE=1"
+BASE_LDFLAGS=""
+
+BUILD_CFLAGS="$CFLAGS"
+BUILD_LDFLAGS="$LDFLAGS"
+
+EXTRA_CFLAGS="$EXTRA_CFLAGS $INCLUDE $BASE_CFLAGS"
+EXTRA_LDFLAGS="$BASE_LDFLAGS"
+## These are common directories to find software packages
+# for path in $HOME $SD_LIB_PATH /usr/pkg /opt/toolchain/sysroot /usr/local; do
+#    if test -d $path/include; then
+#        EXTRA_CFLAGS="$EXTRA_CFLAGS -I$path/include"
+#    fi
+#    if test -d $path/lib; then
+#        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$path/lib"
+#    fi
+# done
+SDL_CFLAGS="$BASE_CFLAGS"
+SDL_LIBS="-lSDL $BASE_LDFLAGS"
+dnl ###################################################################################
 dnl Check for a valid linux/version.h and generic linux input event support.
 dnl ###################################################################################
-AC_CHECK_HEADERS([linux/version.h],[EXTRA_CFLAGS="$EXTRA_CFLAGS -DHAVE_LINUX_VERSION_H"], [])
-AC_CHECK_HEADERS([linux/input.h],  [AC_DEFINE([SDL_INPUT_LINUXEV], [1], [Define if supporting input events])], [])
+AC_CHECK_HEADERS([linux/version.h], [EXTRA_CFLAGS="$EXTRA_CFLAGS -DHAVE_LINUX_VERSION_H"], [])
+AC_CHECK_HEADERS([linux/input.h], [
+    AC_DEFINE([SDL_INPUT_LINUXEV], [1], [Define if supporting input events])
+    have_linuxev=yes
+], [
+    have_linuxev=no
+])
 dnl ###################################################################################
-dnl Enable/disable various subsystems of the SDL library
+dnl See whether we are allowed to use the system C library
 dnl ###################################################################################
-AC_ARG_ENABLE([libc],              [AS_HELP_STRING([--disable-libc],             [Disable Standard C libraries])],                     [enable_libc=$enableval],          [enable_libc=yes])
-AC_ARG_ENABLE([audio],             [AS_HELP_STRING([--disable-audio],            [Disable Audio Subsystem])],                          [enable_audio=$enableval],         [enable_audio=yes])
-AC_ARG_ENABLE([video],             [AS_HELP_STRING([--disable-video],            [Disable Video Subsystem])],                          [enable_video=$enableval],         [enable_video=yes])
-AC_ARG_ENABLE([events],            [AS_HELP_STRING([--disable-events],           [Disable Events Subsystem])],                         [enable_events=$enableval],        [enable_events=yes])
-AC_ARG_ENABLE([joystick],          [AS_HELP_STRING([--disable-joystick],         [Disable Joystick Subsystem])],                       [enable_joystick=$enableval],      [enable_joystick=yes])
-AC_ARG_ENABLE([cdrom],             [AS_HELP_STRING([--disable-cdrom],            [Disable Cdrom Subsystem])],                          [enable_cdrom=$enableval],         [enable_cdrom=yes])
-AC_ARG_ENABLE([threads],           [AS_HELP_STRING([--disable-threads],          [Disable Threading Subsystem])],                      [enable_threads=$enableval],       [enable_threads=yes])
-AC_ARG_ENABLE([timers],            [AS_HELP_STRING([--disable-timers],           [Disable Timer Subsystem])],                          [enable_timers=$enableval],        [enable_timers=yes])
-AC_ARG_ENABLE([file],              [AS_HELP_STRING([--disable-file],             [Disable File Subsystem])],                           [enable_file=$enableval],          [enable_file=yes])
-AC_ARG_ENABLE([filesystem],        [AS_HELP_STRING([--disable-filesystem],       [Disable Filesystem Paths Subsystem])],               [enable_filesystem=$enableval],    [enable_filesystem=yes])
-AC_ARG_ENABLE([loadso],            [AS_HELP_STRING([--disable-loadso],           [Disable Shared Object Loading Subsystem])],          [enable_loadso=$enableval],        [enable_loadso=yes])
-AC_ARG_ENABLE([power],             [AS_HELP_STRING([--disable-power],            [Disable Power Management Subsystem])],               [enable_power=$enableval],         [enable_power=yes])
-AC_ARG_ENABLE([cpuinfo],           [AS_HELP_STRING([--disable-cpuinfo],          [Disable Cpuinfo Subsystem ])],                       [enable_cpuinfo=$enableval],       [enable_cpuinfo=yes])
-dnl ###################################################################################
-AC_ARG_ENABLE([video-fbcon],       [AS_HELP_STRING([--disable-video-fbcon],      [Disable Framebuffer Console])],                      [enable_video_fbcon=$enableval],   [enable_video_fbcon=yes])
-AC_ARG_ENABLE([video-dummy],       [AS_HELP_STRING([--disable-video-dummy],      [Disable Dummy Video Driver])],                       [enable_video_dummy=$enableval],   [enable_video_dummy=yes])
-AC_ARG_ENABLE([video-kmsdrm],      [AS_HELP_STRING([--disable-video-kmsdrm],     [Disable KMSDRM Video Driver])],                      [enable_video_kmsdrm=$enableval],  [enable_video_kmsdrm=yes])
-dnl ###################################################################################
-AC_ARG_ENABLE([arm-simd],          [AS_HELP_STRING([--disable-arm-simd],         [Disable ARMv6 SIMD support])],                       [enable_arm_simd=$enableval],      [enable_arm_simd=yes])
-AC_ARG_ENABLE([arm-neon],          [AS_HELP_STRING([--disable-arm-neon],         [Disable ARM NEON support])],                         [enable_arm_neon=$enableval],      [enable_arm_neon=yes])
-dnl ###################################################################################
-AC_ARG_ENABLE([oss],               [AS_HELP_STRING([--disable-oss],              [Disable OSS support])],                              [enable_oss=$enableval],           [enable_oss=yes])
-AC_ARG_ENABLE([alsa],              [AS_HELP_STRING([--disable-alsa],             [Disable ALSA support])],                             [enable_alsa=$enableval],          [enable_alsa=yes])
-AC_ARG_ENABLE([pulseaudio],        [AS_HELP_STRING([--disable-pulseaudio],       [Disable PulseAudio support])],                       [enable_pulseaudio=$enableval],    [enable_pulseaudio=yes])
-AC_ARG_ENABLE([dummyaudio],        [AS_HELP_STRING([--disable-dummyaudio],       [Disable Dummy Audio Driver])],                       [enable_dummyaudio=$enableval],    [enable_dummyaudio=yes])
-dnl ###################################################################################
-AC_ARG_ENABLE([pthreads],          [AS_HELP_STRING([--disable-pthreads],         [Disable POSIX threads for multi-threading])],        [enable_pthreads=$enableval],      [enable_pthreads=yes])
-AC_ARG_ENABLE([pthread-sem],       [AS_HELP_STRING([--disable-pthread-sem],      [Disable pthread semaphores])],                       [enable_pthread_sem=$enableval],   [enable_pthread_sem=yes])
-AC_ARG_ENABLE([pth],               [AS_HELP_STRING([--enable-pth],               [Enable GNU pth library for multi-threading])],       [enable_pth=$enableval],           [enable_pth=no])
-dnl ###################################################################################
-AC_ARG_ENABLE([rpath],             [AS_HELP_STRING([--disable-rpath],            [Disable rpath when Linking SDL])],                   [enable_rpath=$enableval],         [enable_rpath=yes])
-AC_ARG_ENABLE([sdl-dlopen],        [AS_HELP_STRING([--disable-sdl-dlopen],       [Disable dlopen for Shared Object loading])],         [enable_sdl_dlopen=$enableval],    [enable_sdl_dlopen=yes])
-AC_ARG_ENABLE([alsa-shared],       [AS_HELP_STRING([--disable-alsa-shared],      [Disable Dynamically load ALSA support])],            [enable_oss=$enableval],           [enable_alsa_shared=yes])
-AC_ARG_ENABLE([pulseaudio-shared], [AS_HELP_STRING([--disable-pulseaudio-shared],[Disable Dynamically load PulseAudio support])],      [enable_oss=$enableval],           [enable_pulseaudio_shared=yes])
-dnl ###################################################################################
-AC_ARG_ENABLE([clock_gettime],     [AS_HELP_STRING([--disable-clock_gettime],    [Enable gettimeofday() instead of clock_gettime()])], [enable_clock_gettime=$enableval], [enable_clock_gettime=yes])
-AC_ARG_ENABLE(input-tslib,         [AS_HELP_STRING([--enable-input-tslib],       [Enable Touchscreen library for input])],             [enable_input_tslib=$enableval],   [enable_input_tslib=no])
-AC_ARG_ENABLE([haptic],            [AS_HELP_STRING([--enable-haptic],            [Enable Haptic (force feedback) subsystem])],         [enable_haptic=$enableval],        [enable_haptic=no])
-AC_ARG_ENABLE([screensaver],       [AS_HELP_STRING([--enable-screensaver],       [Enable Screensaver while an SDL app is running])],   [enable_screensaver=$enableval],   [enable_screensaver=no])
-dnl ###################################################################################
-AC_ARG_ENABLE([debug],             [AS_HELP_STRING([--enable-debug],             [Build Debug Version])],                              [use_debug=$enableval],            [use_debug=no])
-AC_ARG_ENABLE([kmsdrm-debug],      [AS_HELP_STRING([--enable-kmsdrm-debug],      [Debug KMSDRM])],                                     [kmsdrm_debug=$enableval],         [kmsdrm_debug=no])
-AC_ARG_WITH([platform],            [AS_HELP_STRING([--with-platform],            [Use Pre-configured Settings for SoC Boards])],       [use_platform=$withval],           [use_platform=none])
-dnl ###################################################################################
-AC_ARG_ENABLE([libudev],           [AS_HELP_STRING([--disable-libudev],          [Disable libudev support])],                          [enable_libudev=$enableval],       [enable_libudev=yes])
-
-
+AC_ARG_ENABLE([libc], [AS_HELP_STRING([--disable-libc], [Disable standard C libraries (default is enable)])], [enable_libc=$enableval], [enable_libc=yes])
 if test "x$enable_libc" = "xyes"; then
     dnl Check for C library headers,  functions and libraries
     AC_DEFINE([HAVE_LIBC],[1],[Define if using C standard libraries])
@@ -223,7 +216,7 @@ if test "x$enable_libc" = "xyes"; then
     AC_CHECK_HEADERS(sys/types.h sys/file.h sys/ioctl.h sys/mount.h \
         stddef.h stdint.h stdlib.h string.h strings.h stdio.h stdlib.h stddef.h stdarg.h \
         malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h \
-        math.h float.h iconv.h signal.h libio.h unistd.h fcntl.h)
+        math.h float.h iconv.h signal.h libio.h)
 
     AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv getpagesize \
         qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcsdup wcsstr wcscmp \
@@ -298,6 +291,54 @@ if test "x$have_inttypes" != "xyes"; then
     AC_DEFINE([size_t], [unsigned int], [Define if size_t])
     AC_DEFINE([uintptr_t], [unsigned long], [Define if uintptr_t])
 fi
+dnl ###################################################################################
+dnl Enable/disable various subsystems of the SDL library
+dnl ###################################################################################
+AC_ARG_ENABLE([libc],              [AS_HELP_STRING([--disable-libc],             [Disable Standard C libraries])],                     [enable_libc=$enableval],          [enable_libc=yes])
+AC_ARG_ENABLE([audio],             [AS_HELP_STRING([--disable-audio],            [Disable Audio Subsystem])],                          [enable_audio=$enableval],         [enable_audio=yes])
+AC_ARG_ENABLE([video],             [AS_HELP_STRING([--disable-video],            [Disable Video Subsystem])],                          [enable_video=$enableval],         [enable_video=yes])
+AC_ARG_ENABLE([events],            [AS_HELP_STRING([--disable-events],           [Disable Events Subsystem])],                         [enable_events=$enableval],        [enable_events=yes])
+AC_ARG_ENABLE([joystick],          [AS_HELP_STRING([--disable-joystick],         [Disable Joystick Subsystem])],                       [enable_joystick=$enableval],      [enable_joystick=yes])
+AC_ARG_ENABLE([cdrom],             [AS_HELP_STRING([--disable-cdrom],            [Disable Cdrom Subsystem])],                          [enable_cdrom=$enableval],         [enable_cdrom=yes])
+AC_ARG_ENABLE([threads],           [AS_HELP_STRING([--disable-threads],          [Disable Threading Subsystem])],                      [enable_threads=$enableval],       [enable_threads=yes])
+AC_ARG_ENABLE([timers],            [AS_HELP_STRING([--disable-timers],           [Disable Timer Subsystem])],                          [enable_timers=$enableval],        [enable_timers=yes])
+AC_ARG_ENABLE([file],              [AS_HELP_STRING([--disable-file],             [Disable File Subsystem])],                           [enable_file=$enableval],          [enable_file=yes])
+AC_ARG_ENABLE([filesystem],        [AS_HELP_STRING([--disable-filesystem],       [Disable Filesystem Paths Subsystem])],               [enable_filesystem=$enableval],    [enable_filesystem=yes])
+AC_ARG_ENABLE([loadso],            [AS_HELP_STRING([--disable-loadso],           [Disable Shared Object Loading Subsystem])],          [enable_loadso=$enableval],        [enable_loadso=yes])
+AC_ARG_ENABLE([power],             [AS_HELP_STRING([--disable-power],            [Disable Power Management Subsystem])],               [enable_power=$enableval],         [enable_power=yes])
+AC_ARG_ENABLE([cpuinfo],           [AS_HELP_STRING([--disable-cpuinfo],          [Disable Cpuinfo Subsystem ])],                       [enable_cpuinfo=$enableval],       [enable_cpuinfo=yes])
+dnl ###################################################################################
+AC_ARG_ENABLE([video-fbcon],       [AS_HELP_STRING([--disable-video-fbcon],      [Disable Framebuffer Console])],                      [enable_video_fbcon=$enableval],   [enable_video_fbcon=yes])
+AC_ARG_ENABLE([video-dummy],       [AS_HELP_STRING([--disable-video-dummy],      [Disable Dummy Video Driver])],                       [enable_video_dummy=$enableval],   [enable_video_dummy=yes])
+AC_ARG_ENABLE([video-kmsdrm],      [AS_HELP_STRING([--disable-video-kmsdrm],     [Disable KMSDRM Video Driver])],                      [enable_video_kmsdrm=$enableval],  [enable_video_kmsdrm=yes])
+dnl ###################################################################################
+AC_ARG_ENABLE([arm-simd],          [AS_HELP_STRING([--disable-arm-simd],         [Disable ARMv6 SIMD support])],                       [enable_arm_simd=$enableval],      [enable_arm_simd=yes])
+AC_ARG_ENABLE([arm-neon],          [AS_HELP_STRING([--disable-arm-neon],         [Disable ARM NEON support])],                         [enable_arm_neon=$enableval],      [enable_arm_neon=yes])
+dnl ###################################################################################
+AC_ARG_ENABLE([oss],               [AS_HELP_STRING([--disable-oss],              [Disable OSS support])],                              [enable_oss=$enableval],           [enable_oss=yes])
+AC_ARG_ENABLE([alsa],              [AS_HELP_STRING([--disable-alsa],             [Disable ALSA support])],                             [enable_alsa=$enableval],          [enable_alsa=yes])
+AC_ARG_ENABLE([pulseaudio],        [AS_HELP_STRING([--disable-pulseaudio],       [Disable PulseAudio support])],                       [enable_pulseaudio=$enableval],    [enable_pulseaudio=yes])
+AC_ARG_ENABLE([dummyaudio],        [AS_HELP_STRING([--disable-dummyaudio],       [Disable Dummy Audio Driver])],                       [enable_dummyaudio=$enableval],    [enable_dummyaudio=yes])
+dnl ###################################################################################
+AC_ARG_ENABLE([pthreads],          [AS_HELP_STRING([--disable-pthreads],         [Disable POSIX threads for multi-threading])],        [enable_pthreads=$enableval],      [enable_pthreads=yes])
+AC_ARG_ENABLE([pthread-sem],       [AS_HELP_STRING([--disable-pthread-sem],      [Disable pthread semaphores])],                       [enable_pthread_sem=$enableval],   [enable_pthread_sem=yes])
+AC_ARG_ENABLE([pth],               [AS_HELP_STRING([--enable-pth],               [Enable GNU pth library for multi-threading])],       [enable_pth=$enableval],           [enable_pth=no])
+dnl ###################################################################################
+AC_ARG_ENABLE([rpath],             [AS_HELP_STRING([--disable-rpath],            [Disable rpath when Linking SDL])],                   [enable_rpath=$enableval],         [enable_rpath=yes])
+AC_ARG_ENABLE([sdl-dlopen],        [AS_HELP_STRING([--disable-sdl-dlopen],       [Disable dlopen for Shared Object loading])],         [enable_sdl_dlopen=$enableval],    [enable_sdl_dlopen=yes])
+AC_ARG_ENABLE([alsa-shared],       [AS_HELP_STRING([--disable-alsa-shared],      [Disable Dynamically load ALSA support])],            [enable_oss=$enableval],           [enable_alsa_shared=yes])
+AC_ARG_ENABLE([pulseaudio-shared], [AS_HELP_STRING([--disable-pulseaudio-shared],[Disable Dynamically load PulseAudio support])],      [enable_oss=$enableval],           [enable_pulseaudio_shared=yes])
+dnl ###################################################################################
+AC_ARG_ENABLE([clock_gettime],     [AS_HELP_STRING([--disable-clock_gettime],    [Enable gettimeofday() instead of clock_gettime()])], [enable_clock_gettime=$enableval], [enable_clock_gettime=yes])
+AC_ARG_ENABLE(input-tslib,         [AS_HELP_STRING([--enable-input-tslib],       [Enable Touchscreen library for input])],             [enable_input_tslib=$enableval],   [enable_input_tslib=no])
+AC_ARG_ENABLE([haptic],            [AS_HELP_STRING([--enable-haptic],            [Enable Haptic (force feedback) subsystem])],         [enable_haptic=$enableval],        [enable_haptic=no])
+AC_ARG_ENABLE([screensaver],       [AS_HELP_STRING([--enable-screensaver],       [Enable Screensaver while an SDL app is running])],   [enable_screensaver=$enableval],   [enable_screensaver=no])
+dnl ###################################################################################
+AC_ARG_ENABLE([debug],             [AS_HELP_STRING([--enable-debug],             [Build Debug Version])],                              [use_debug=$enableval],            [use_debug=no])
+AC_ARG_ENABLE([kmsdrm-debug],      [AS_HELP_STRING([--enable-kmsdrm-debug],      [Debug KMSDRM])],                                     [kmsdrm_debug=$enableval],         [kmsdrm_debug=no])
+AC_ARG_WITH([platform],            [AS_HELP_STRING([--with-platform],            [Use Pre-configured Settings for SoC Boards])],       [use_platform=$withval],           [use_platform=none])
+dnl ###################################################################################
+AC_ARG_ENABLE([libudev],           [AS_HELP_STRING([--disable-libudev],          [Disable libudev support])],                          [enable_libudev=$enableval],       [enable_libudev=yes])
 
 # Standard C sources
 SOURCES="$SOURCES $srcdir/src/*.c"
@@ -554,8 +595,7 @@ if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
     AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
     AC_MSG_CHECKING(for kms/drm support)
     if test x$PKG_CONFIG != xno; then
-        if $PKG_CONFIG --atleast-version $LIBDRM_REQUIRED_VERSION libdrm && 
-            $PKG_CONFIG --atleast-version $LIBUDEV_REQUIRED_VERSION libudev; then
+        if $PKG_CONFIG --atleast-version $LIBDRM_REQUIRED_VERSION libdrm && $PKG_CONFIG --atleast-version $LIBUDEV_REQUIRED_VERSION libudev; then
             LIBDRM_CFLAGS=`$PKG_CONFIG --cflags libdrm libudev`
             LIBDRM_LIBS=`$PKG_CONFIG --libs libdrm libudev`
             video_kmsdrm=yes
@@ -617,7 +657,7 @@ fi
 dnl Check for pthread support
 pthread_cflags="-D_REENTRANT"
 pthread_lib="-lpthread"
-if test x$enable_threads = xyes -a x$enable_pthreads = xyes -a x$enable_ipod != xyes; then
+if test x$enable_threads = xyes -a x$enable_pthreads = xyes; then
     # Save the original compiler flags and libraries
     ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
     # Add the pthread compiler flags and libraries
@@ -810,13 +850,9 @@ case "$host" in
         ARCH=linux
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
-          case $ARCH in
-            linux)
-                AC_DEFINE(SDL_JOYSTICK_LINUX)
-                SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
-                have_joystick=yes
-            ;;
-          esac
+            AC_DEFINE(SDL_JOYSTICK_LINUX)
+            SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+            have_joystick=yes
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
@@ -842,8 +878,8 @@ esac
 dnl Do this on all platforms, after everything else.
 CheckVisibilityHidden
 CheckWarnAll
-# Verify that we have all the platform specific files we need
 
+# Verify that we have all the platform specific files we need
 if test x$enable_haptic = xyes; then
     AC_CHECK_HEADERS([linux/input.h], [use_input_events=yes], [use_input_events=no])
     if test x$use_input_events = xyes; then
@@ -867,14 +903,12 @@ fi
 
 if test x$enable_joystick = xyes; then
     if test x$have_joystick != xyes; then
-        # Wants joystick subsystem, but doesn't have a platform-specific backend...
         AC_DEFINE(SDL_JOYSTICK_DUMMY)
         SOURCES="$SOURCES $srcdir/src/joystick/dummy/*.c"
     fi
 fi
 if test x$enable_haptic = xyes; then
     if test x$have_haptic != xyes; then
-        # Wants haptic subsystem, but doesn't have a platform-specific backend...
         AC_DEFINE(SDL_HAPTIC_DUMMY)
         SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
     fi
@@ -932,6 +966,7 @@ AC_SUBST(SDL_CFLAGS)
 AC_SUBST(SDL_LIBS)
 AC_SUBST(SDL_STATIC_LIBS)
 AC_SUBST(SDL_RLD_FLAGS)
+
 if test x$enable_shared = xyes; then
     ENABLE_SHARED_TRUE=
     ENABLE_SHARED_FALSE="#"
@@ -939,6 +974,7 @@ else
     ENABLE_SHARED_TRUE="#"
     ENABLE_SHARED_FALSE=
 fi
+
 if test x$enable_static = xyes; then
     ENABLE_STATIC_TRUE=
     ENABLE_STATIC_FALSE="#"
@@ -946,6 +982,7 @@ else
     ENABLE_STATIC_TRUE="#"
     ENABLE_STATIC_FALSE=
 fi
+
 AC_SUBST(ENABLE_SHARED_TRUE)
 AC_SUBST(ENABLE_SHARED_FALSE)
 AC_SUBST(ENABLE_STATIC_TRUE)
