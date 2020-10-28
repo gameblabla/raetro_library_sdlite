@@ -72,15 +72,9 @@ config.log
 /.dummy
 /.dummy.in
 /Makefile
-/Makefile.in
 /Makefile.include
-/aclocal.m4
 /autom4te.cache
 /scripts/compile
-/scripts/config.guess
-/scripts/config.sub
-/scripts/install-sh
-/scripts/ltmain.sh
 /scripts/missing
 /autotools
 /build
@@ -92,15 +86,12 @@ config.log
 /*.patch
 
 compile
-config.guess
 config.h
 config.h.in
-config.sub
 configure
 configure.ac~
 depcomp
 INSTALL
-install-sh
 .deps
 .libs
 .dirstamp
@@ -108,7 +99,6 @@ install-sh
 *.la
 
 libtool
-ltmain.sh
 missing
 m4/libtool.m4
 m4/ltoptions.m4
@@ -117,6 +107,7 @@ m4/ltversion.m4
 m4/lt~obsolete.m4
 stamp-h1
 include/stamp-h1
+include/SDL_config.h
 include/SDL_config.in
 include/SDL_config.h.in~
 c.ac-bkp.m4
