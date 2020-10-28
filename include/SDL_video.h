@@ -744,7 +744,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *src, SDL_Pi
 /** This is the public blit function, SDL_BlitSurface(), and it performs
  *  rectangle validation and clipping before passing it to SDL_LowerBlit()
  */
-extern DECLSPEC int SDLCALL SDL_UpperBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
+extern DECLSPEC int SDLCALL SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect);
 
 /** This is a semi-private blit function and it performs low-level surface
  *  blitting only.

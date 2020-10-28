@@ -39,10 +39,19 @@
 #include "SDL_leaks.h"
 #include "SDL_cpuinfo.h"
 
+/** Public routines */
 
-/* Public routines */
-/*
- * Create an empty RGB surface of the appropriate depth
+/**
+ * @brief Create an empty RGB surface of the appropriate depth
+ * @param flags
+ * @param width
+ * @param height
+ * @param depth
+ * @param Rmask
+ * @param Gmask
+ * @param Bmask
+ * @param Amask
+ * @return
  */
 SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask) {
 	SDL_VideoDevice *video = current_video;
@@ -434,7 +443,7 @@ int SDL_LowerBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rec
 	return (do_blit(src, srcrect, dst, dstrect));
 }
 
-int SDL_UpperBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
+int SDL_UpperBlit(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
 	SDL_Rect fulldst;
 	int srcx, srcy, w, h;
 
@@ -528,7 +537,6 @@ int SDL_UpperBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rec
 	return 0;
 }
 
-
 /**
  *  This is a semi-private blit function and it performs low-level surface
  *  scaled blitting only.
@@ -547,7 +555,6 @@ int SDL_LowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, S
 		return SDL_LowerBlit(src, srcrect, dst, dstrect);
 	}
 }
-
 
 int SDL_UpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
 	double src_x0, src_y0, src_x1, src_y1;
