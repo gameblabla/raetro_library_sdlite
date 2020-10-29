@@ -1215,4 +1215,23 @@ void SDL_SYS_JoystickQuit(void) {
 	}
 }
 
+
+static void LINUX_JoystickDetect(void) {
+
+}
+
+static int LINUX_JoystickInit(void) {
+	return 0;
+}
+
+static int LINUX_JoystickGetCount(void) {
+	return 1;
+}
+
+SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
+	LINUX_JoystickInit,
+	LINUX_JoystickGetCount,
+	LINUX_JoystickDetect
+};
+
 #endif /* SDL_JOYSTICK_LINUX */

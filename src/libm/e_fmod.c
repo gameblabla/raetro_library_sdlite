@@ -42,8 +42,9 @@ double attribute_hidden __ieee754_fmod(double x, double y) {
 		if((hx < hy) || (lx < ly)) {
 			return x;
 		}    /* |x|<|y| return x */
-		if(lx == ly)
-			return Zero[(u_int32_t) sx >> 31];    /* |x|=|y| return x*0*/
+		if(lx == ly) {
+			return Zero[(u_int32_t) sx >> 31];
+		}    /* |x|=|y| return x*0*/
 	}
 
 	/* determine ix = ilogb(x) */

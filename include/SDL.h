@@ -79,11 +79,12 @@ extern "C" {
 #define SDL_INIT_TIMER        0x00000001
 #define SDL_INIT_AUDIO        0x00000010
 #define SDL_INIT_VIDEO        0x00000020 /**< SDL_INIT_VIDEO implies SDL_INIT_EVENTS */
-#define SDL_INIT_CDROM        0x00000100
 #define SDL_INIT_JOYSTICK     0x00000200 /**< SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS */
+#define SDL_INIT_HAPTIC       0x00001000
+#define SDL_INIT_CDROM        0x00000100
 #define SDL_INIT_NOPARACHUTE  0x00100000 /**< Don't catch fatal signals */
 #define SDL_INIT_EVENTTHREAD  0x01000000 /**< Not supported on all OS's */
-#define SDL_INIT_EVERYTHING   0x0000FFFF
+#define SDL_INIT_EVERYTHING   ( SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC )
 
 /**
  * This function loads the SDL dynamically linked library and initializes

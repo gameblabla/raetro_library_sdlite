@@ -32,6 +32,7 @@
 #define SDL_sysjoystick_c_h_
 
 #include <linux/input.h>
+#include <SDL_joystick.h>
 
 struct SDL_joylist_item;
 

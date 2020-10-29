@@ -134,8 +134,9 @@ double __ieee754_exp(double x)    /* default IEEE double exp */
 		if(x > o_threshold) return INFINITY; /* overflow */
 		#endif
 
-		if(x < u_threshold)
-			return twom1000 * twom1000; /* underflow */
+		if(x < u_threshold) {
+			return twom1000 * twom1000;
+		} /* underflow */
 	}
 
 	/* argument reduction */

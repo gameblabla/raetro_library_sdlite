@@ -29,12 +29,13 @@
  *
  ******************************************************************************/
 #include "SDL_config.h"
-
 /* Initialization code for SDL */
 
 #include "SDL.h"
+
 #include "SDL_fatal.h"
 #include "SDL_revision.h"
+#include <unistd.h>
 
 #if !SDL_VIDEO_DISABLED
 
@@ -70,6 +71,19 @@ extern int SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
 
 #endif
+
+/* This is not declared in any header, although it is shared between some
+    parts of SDL, because we don't want anything calling it without an
+    extremely good reason. */
+extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
+
+SDL_NORETURN void SDL_ExitProcess(int exitcode) {
+#if defined(HAVE__EXIT) /* Upper case _Exit() */
+	_Exit(exitcode);
+#else
+	_exit(exitcode);
+#endif
+}
 
 /* The current SDL version */
 static SDL_version version = {

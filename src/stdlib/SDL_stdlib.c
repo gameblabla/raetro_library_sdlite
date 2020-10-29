@@ -29,10 +29,10 @@
  *
  ******************************************************************************/
 #include "SDL_config.h"
-
 /* This file contains portable stdlib functions for SDL */
 
 #include "SDL_stdinc.h"
+#include <math.h>
 #include "../libm/math_libm.h"
 
 double SDL_atan(double x) {
@@ -379,13 +379,14 @@ float SDL_tanf(float x) {
 
 int SDL_abs(int x) {
 #if defined(HAVE_ABS)
-return abs(x);
+	return abs(x);
 #else
-return ((x) < 0 ? -(x) : (x));
+	return ((x) < 0 ? -(x) : (x));
 #endif
 }
 
 #if defined(HAVE_CTYPE_H)
+
 int SDL_isdigit(int x) {
 	return isdigit(x);
 }
@@ -409,6 +410,7 @@ int SDL_toupper(int x) {
 int SDL_tolower(int x) {
 	return tolower(x);
 }
+
 #else
 int SDL_isdigit(int x) { return ((x) >= '0') && ((x) <= '9'); }
 int SDL_isspace(int x) { return ((x) == ' ') || ((x) == '\t') || ((x) == '\r') || ((x) == '\n') || ((x) == '\f') || ((x) == '\v'); }
@@ -417,7 +419,6 @@ int SDL_islower(int x) { return ((x) >= 'a') && ((x) <= 'z'); }
 int SDL_toupper(int x) { return ((x) >= 'a') && ((x) <= 'z') ? ('A'+((x)-'a')) : (x); }
 int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a'+((x)-'A')) : (x); }
 #endif
-
 
 #ifndef HAVE_LIBC
 

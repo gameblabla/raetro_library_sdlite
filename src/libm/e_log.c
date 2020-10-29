@@ -1,4 +1,3 @@
-/* @(#)e_log.c 5.1 93/09/24 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -10,8 +9,9 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_log.c,v 1.8 1995/05/10 20:45:49 jtc Exp $";
+#if defined(_MSC_VER)           /* Handle Microsoft VC++ compiler specifics. */
+/* C4723: potential divide by zero. */
+#pragma warning ( disable : 4723 )
 #endif
 
 /* __ieee754_log(x)
@@ -65,32 +65,23 @@ static char rcsid[] = "$NetBSD: e_log.c,v 1.8 1995/05/10 20:45:49 jtc Exp $";
  * to produce the hexadecimal values shown.
  */
 
-/*#include "math.h"*/
+#include "math_libm.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-static const double
-#else
-static double
-#endif
-ln2_hi = 6.93147180369123816490e-01,    /* 3fe62e42 fee00000 */
+static const double ln2_hi = 6.93147180369123816490e-01,    /* 3fe62e42 fee00000 */
 ln2_lo = 1.90821492927058770002e-10,    /* 3dea39ef 35793c76 */
-Lg1    = 6.666666666666735130e-01,      /* 3FE55555 55555593 */
-Lg2    = 3.999999999940941908e-01,      /* 3FD99999 9997FA04 */
-Lg3    = 2.857142874366239149e-01,      /* 3FD24924 94229359 */
-Lg4    = 2.222219843214978396e-01,      /* 3FCC71C5 1D8E78AF */
-Lg5    = 1.818357216161805012e-01,      /* 3FC74664 96CB03DE */
-Lg6    = 1.531383769920937332e-01,      /* 3FC39A09 D078C69F */
-Lg7    = 1.479819860511658591e-01;      /* 3FC2F112 DF3E5244 */
+two54 = 1.80143985094819840000e+16,  /* 43500000 00000000 */
+Lg1 = 6.666666666666735130e-01,  /* 3FE55555 55555593 */
+Lg2 = 3.999999999940941908e-01,  /* 3FD99999 9997FA04 */
+Lg3 = 2.857142874366239149e-01,  /* 3FD24924 94229359 */
+Lg4 = 2.222219843214978396e-01,  /* 3FCC71C5 1D8E78AF */
+Lg5 = 1.818357216161805012e-01,  /* 3FC74664 96CB03DE */
+Lg6 = 1.531383769920937332e-01,  /* 3FC39A09 D078C69F */
+Lg7 = 1.479819860511658591e-01;  /* 3FC2F112 DF3E5244 */
 
-#ifdef __STDC__
+static const double zero = 0.0;
 
-double __ieee754_log(double x)
-#else
-double __ieee754_log(x)
-double x;
-#endif
-{
+double attribute_hidden __ieee754_log(double x) {
 	double hfsq, f, s, z, R, w, t1, t2, dk;
 	int32_t k, hx, i, j;
 	u_int32_t lx;
@@ -102,8 +93,9 @@ double x;
 		if(((hx & 0x7fffffff) | lx) == 0) {
 			return -two54 / zero;
 		}        /* log(+-0)=-inf */
-		if(hx < 0)
-			return (x - x) / zero;    /* log(-#) = NaN */
+		if(hx < 0) {
+			return (x - x) / zero;
+		}    /* log(-#) = NaN */
 		k -= 54;
 		x *= two54; /* subnormal number, scale up x */
 		GET_HIGH_WORD(hx, x);
@@ -159,3 +151,21 @@ double x;
 		}
 	}
 }
+
+/*
+ * wrapper log(x)
+ */
+#ifndef _IEEE_LIBM
+double log(double x)
+{
+	double z = __ieee754_log(x);
+	if (_LIB_VERSION == _IEEE_ || isnan(x) || x > 0.0)
+		return z;
+	if (x == 0.0)
+		return __kernel_standard(x, x, 16); /* log(0) */
+	return __kernel_standard(x, x, 17); /* log(x<0) */
+}
+#else
+strong_alias(__ieee754_log, log)
+#endif
+libm_hidden_def(log)

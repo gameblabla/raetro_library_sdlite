@@ -213,10 +213,18 @@ if test "x$enable_libc" = "xyes"; then
     dnl Check for C library headers,  functions and libraries
     AC_DEFINE([HAVE_LIBC],[1],[Define if using C standard libraries])
     AC_HEADER_STDC
+    AC_FUNC_ALLOCA
+    AC_FUNC_MEMCMP
+    AC_FUNC_STRTOD
+    AC_TYPE_SIZE_T
+
+    AC_CHECK_LIB([iconv], [libiconv_open], [EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
+    AC_CHECK_LIB([m], [pow], [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
+
     AC_CHECK_HEADERS(sys/types.h sys/file.h sys/ioctl.h sys/mount.h \
         stddef.h stdint.h stdlib.h string.h strings.h stdio.h stdlib.h stddef.h stdarg.h \
         malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h \
-        math.h float.h iconv.h signal.h libio.h)
+        math.h float.h iconv.h signal.h libio.h unistd.h fcntl.h)
 
     AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv getpagesize \
         qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcsdup wcsstr wcscmp \
@@ -228,13 +236,10 @@ if test "x$enable_libc" = "xyes"; then
 
     AC_CHECK_FUNC([mprotect], [AC_DEFINE([HAVE_MPROTECT],[1],[Define if supporting mprotect])],[])
 
-    AC_CHECK_LIB([iconv], [libiconv_open], [EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
-    AC_CHECK_LIB([m], [pow], [EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
+    AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
+
     AC_CHECK_MEMBER([struct sigaction.sa_sigaction],[AC_DEFINE([HAVE_SA_SIGACTION],[1],[Define if supporting sigaction])], ,[#include <signal.h>])
-    AC_FUNC_ALLOCA
-    AC_FUNC_MEMCMP
-    AC_FUNC_STRTOD
-    AC_TYPE_SIZE_T
+
     if test "x$ac_cv_header_inttypes_h" = "xyes" -o "x$ac_cv_header_stdint_h" = "xyes"; then
         AC_CHECK_TYPE(int64_t)
         if test "x$ac_cv_type_int64_t" = "xyes"; then
@@ -315,9 +320,9 @@ dnl ############################################################################
 AC_ARG_ENABLE([arm-simd],          [AS_HELP_STRING([--disable-arm-simd],         [Disable ARMv6 SIMD support])],                       [enable_arm_simd=$enableval],      [enable_arm_simd=yes])
 AC_ARG_ENABLE([arm-neon],          [AS_HELP_STRING([--disable-arm-neon],         [Disable ARM NEON support])],                         [enable_arm_neon=$enableval],      [enable_arm_neon=yes])
 dnl ###################################################################################
-AC_ARG_ENABLE([oss],               [AS_HELP_STRING([--disable-oss],              [Disable OSS support])],                              [enable_oss=$enableval],           [enable_oss=yes])
+AC_ARG_ENABLE([oss],               [AS_HELP_STRING([--disable-oss],              [Disable OSS support])],                              [enable_oss=$enableval],           [enable_oss=no])
 AC_ARG_ENABLE([alsa],              [AS_HELP_STRING([--disable-alsa],             [Disable ALSA support])],                             [enable_alsa=$enableval],          [enable_alsa=yes])
-AC_ARG_ENABLE([pulseaudio],        [AS_HELP_STRING([--disable-pulseaudio],       [Disable PulseAudio support])],                       [enable_pulseaudio=$enableval],    [enable_pulseaudio=yes])
+AC_ARG_ENABLE([pulseaudio],        [AS_HELP_STRING([--disable-pulseaudio],       [Disable PulseAudio support])],                       [enable_pulseaudio=$enableval],    [enable_pulseaudio=no])
 AC_ARG_ENABLE([dummyaudio],        [AS_HELP_STRING([--disable-dummyaudio],       [Disable Dummy Audio Driver])],                       [enable_dummyaudio=$enableval],    [enable_dummyaudio=yes])
 dnl ###################################################################################
 AC_ARG_ENABLE([pthreads],          [AS_HELP_STRING([--disable-pthreads],         [Disable POSIX threads for multi-threading])],        [enable_pthreads=$enableval],      [enable_pthreads=yes])
@@ -331,14 +336,14 @@ AC_ARG_ENABLE([pulseaudio-shared], [AS_HELP_STRING([--disable-pulseaudio-shared]
 dnl ###################################################################################
 AC_ARG_ENABLE([clock_gettime],     [AS_HELP_STRING([--disable-clock_gettime],    [Enable gettimeofday() instead of clock_gettime()])], [enable_clock_gettime=$enableval], [enable_clock_gettime=yes])
 AC_ARG_ENABLE(input-tslib,         [AS_HELP_STRING([--enable-input-tslib],       [Enable Touchscreen library for input])],             [enable_input_tslib=$enableval],   [enable_input_tslib=no])
-AC_ARG_ENABLE([haptic],            [AS_HELP_STRING([--enable-haptic],            [Enable Haptic (force feedback) subsystem])],         [enable_haptic=$enableval],        [enable_haptic=no])
+AC_ARG_ENABLE([haptic],            [AS_HELP_STRING([--enable-haptic],            [Enable Haptic (force feedback) subsystem])],         [enable_haptic=$enableval],        [enable_haptic=yes])
 AC_ARG_ENABLE([screensaver],       [AS_HELP_STRING([--enable-screensaver],       [Enable Screensaver while an SDL app is running])],   [enable_screensaver=$enableval],   [enable_screensaver=no])
 dnl ###################################################################################
 AC_ARG_ENABLE([debug],             [AS_HELP_STRING([--enable-debug],             [Build Debug Version])],                              [use_debug=$enableval],            [use_debug=no])
 AC_ARG_ENABLE([kmsdrm-debug],      [AS_HELP_STRING([--enable-kmsdrm-debug],      [Debug KMSDRM])],                                     [kmsdrm_debug=$enableval],         [kmsdrm_debug=no])
 AC_ARG_WITH([platform],            [AS_HELP_STRING([--with-platform],            [Use Pre-configured Settings for SoC Boards])],       [use_platform=$withval],           [use_platform=none])
 dnl ###################################################################################
-AC_ARG_ENABLE([libudev],           [AS_HELP_STRING([--disable-libudev],          [Disable libudev support])],                          [enable_libudev=$enableval],       [enable_libudev=yes])
+AC_ARG_ENABLE([libudev],           [AS_HELP_STRING([--disable-libudev],          [Disable libudev support])],                          [enable_libudev=$enableval],       [enable_libudev=no])
 
 # Standard C sources
 SOURCES="$SOURCES $srcdir/src/*.c"
@@ -613,7 +618,6 @@ if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
         have_video=yes
     fi
 fi
-
 dnl Set up the Null video driver.
 if test x$enable_video_dummy = xyes; then
     AC_DEFINE(SDL_VIDEO_DRIVER_DUMMY)
@@ -960,6 +964,7 @@ else
     SDL_RLD_FLAGS=""
 fi
     SDL_STATIC_LIBS="$SDL_LIBS $EXTRA_LDFLAGS"
+
 
 dnl Expand the cflags and libraries needed by apps using SDL
 AC_SUBST(SDL_CFLAGS)

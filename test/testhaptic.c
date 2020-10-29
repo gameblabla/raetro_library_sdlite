@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdio.h>              /* printf */
 #include <string.h>             /* strstr */
 #include <ctype.h>              /* isdigit */
+#include <stdlib.h>
 
 static SDL_Haptic *haptic;
 
@@ -124,7 +125,7 @@ int main(int argc, char **argv) {
 	/* Now we'll try a SAWTOOTHUP */
 	if(supported & SDL_HAPTIC_SAWTOOTHUP) {
 		printf("   effect %d: Sawtooth Up\n", nefx);
-		efx[nefx].type = SDL_HAPTIC_SQUARE;
+		efx[nefx].type = SDL_HAPTIC_LEFTRIGHT;
 		efx[nefx].periodic.period = 500;
 		efx[nefx].periodic.magnitude = 0x5000;
 		efx[nefx].periodic.length = 5000;
@@ -234,8 +235,8 @@ static void HapticPrintSupported(SDL_Haptic *haptic) {
 	if(supported & SDL_HAPTIC_SINE) {
 		printf("      sine\n");
 	}
-	if(supported & SDL_HAPTIC_SQUARE) {
-		printf("      square\n");
+	if(supported & SDL_HAPTIC_LEFTRIGHT) {
+		printf("      left/right\n");
 	}
 	if(supported & SDL_HAPTIC_TRIANGLE) {
 		printf("      triangle\n");

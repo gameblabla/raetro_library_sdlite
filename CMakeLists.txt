@@ -33,6 +33,7 @@ add_executable(sdlite_dirty
 			   include/close_code.h
 			   include/SDL.h
 			   include/SDL_active.h
+			   include/SDL_assert.h
 			   include/SDL_audio.h
 			   include/SDL_byteorder.h
 			   include/SDL_cdrom.h
@@ -119,15 +120,16 @@ add_executable(sdlite_dirty
 			   src/haptic/SDL_syshaptic.h
 			   src/joystick/dummy/SDL_sysjoystick.c
 			   src/joystick/linux/SDL_sysjoystick.c
+			   src/joystick/linux/SDL_sysjoystick_c.h
 			   src/joystick/SDL_joystick.c
 			   src/joystick/SDL_joystick_c.h
 			   src/joystick/SDL_sysjoystick.h
 			   src/libm/e_atan2.c
 			   src/libm/e_exp.c
 			   src/libm/e_fmod.c
-			   src/libm/e_log.h
+			   src/libm/e_log.c
 			   src/libm/e_log10.c
-			   src/libm/e_pow.h
+			   src/libm/e_pow.c
 			   src/libm/e_rem_pio2.c
 			   src/libm/e_sqrt.c
 			   src/libm/e_sqrt.h
@@ -237,6 +239,8 @@ add_executable(sdlite_dirty
 			   src/video/SDL_yuv_sw_c.h
 			   src/video/SDL_yuvfuncs.h
 			   src/SDL.c
+			   src/SDL_assert.c
+			   src/SDL_assert_c.h
 			   src/SDL_error.c
 			   src/SDL_error_c.h
 			   src/SDL_fatal.c

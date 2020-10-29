@@ -57,6 +57,7 @@ HDRS = \
 	SDL.h \
 	SDL_active.h \
 	SDL_audio.h \
+	SDL_assert.h \
 	SDL_byteorder.h \
 	SDL_cdrom.h \
 	SDL_config.h \

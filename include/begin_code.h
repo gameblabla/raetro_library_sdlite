@@ -83,3 +83,12 @@
 #ifndef SDL_INLINE_OKAY
 #define __inline__
 #endif
+
+
+#ifndef SDL_NORETURN
+	#if defined(__GNUC__)
+		#define SDL_NORETURN __attribute__((noreturn))
+	#else
+		#define SDL_NORETURN
+	#endif
+#endif /* SDL_NORETURN not defined */

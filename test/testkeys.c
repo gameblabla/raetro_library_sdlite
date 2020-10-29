@@ -1,9 +1,7 @@
 /* Print out all the keysyms we have, just to verify them */
 
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "SDL.h"
 

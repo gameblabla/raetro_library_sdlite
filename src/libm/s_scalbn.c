@@ -45,8 +45,9 @@ double scalbln(double x, long n) {
 		return x + x;
 	} /* NaN or Inf */
 	k = (int32_t) (k + n);
-	if(k > 0x7fe)
-		return huge * copysign(huge, x); /* overflow */
+	if(k > 0x7fe) {
+		return huge * copysign(huge, x);
+	} /* overflow */
 	if(n < -50000)
 		return tiny * copysign(tiny, x); /* underflow */
 	if(k > 0) { /* normal result */

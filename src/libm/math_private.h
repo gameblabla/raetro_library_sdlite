@@ -14,7 +14,7 @@
 #ifndef _MATH_PRIVATE_H_
 #define _MATH_PRIVATE_H_
 
-#include "SDL_name.h"
+#include "math_libm.h"
 #include "SDL_endian.h"
 
 #define _IEEE_LIBM

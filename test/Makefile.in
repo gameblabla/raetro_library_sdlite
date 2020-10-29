@@ -7,7 +7,11 @@ CC      = @CC@
 CFLAGS  = @CFLAGS@
 LIBS	= @LIBS@
 
-TARGETS = checkkeys graywin loopwave testalpha testbitmap testpower testblitspeed testcdrom testcursor testpower testdyngl testerror testfile testfilesystem testgamma testgl testgles testhread testiconv testjoystick testkeys testlock testoverlay2 testoverlay testpalette testplatform testsem testsprite testtimer testver testvidinfo testwin testwm threadwin torturethread testloadso
+TARGETS = checkkeys graywin loopwave testalpha testbitmap testpower testblitspeed \
+	testcdrom testcursor testpower testdyngl testerror testfile testfilesystem testgamma \
+	testgl testhaptic testhread testiconv testjoystick testkeys testlock testoverlay2 \
+	testoverlay testpalette testplatform testsem testsprite testtimer testver testvidinfo \
+	testwin testwm threadwin torturethread testloadso
 
 all: $(TARGETS)
 
@@ -53,8 +57,11 @@ testgamma: $(srcdir)/testgamma.c
 testgl: $(srcdir)/testgl.c
 	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @GLLIB@ @MATHLIB@
 
-testgles: $(srcdir)/testgles.c
-	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
+# testgles: $(srcdir)/testgles.c
+# 	$(CC) -o $@ $? $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
+
+testhaptic: $(srcdir)/testhaptic.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testhread: $(srcdir)/testhread.c
 	$(CC) -o $@ $? $(CFLAGS) $(LIBS)

@@ -264,8 +264,9 @@ recompute:
 
 			for (i = jz + 1; i <= jz + k; i++) {   /* add q[jz+1] to q[jz+k] */
 				f[jx + i] = (double) ipio2[jv + i];
-				for (j = 0, fw = 0.0; j <= jx; j++)
+				for (j = 0, fw = 0.0; j <= jx; j++) {
 					fw += x[j] * f[jx + i - j];
+				}
 				q[i] = fw;
 			}
 			jz += k;

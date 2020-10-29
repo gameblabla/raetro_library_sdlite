@@ -20,10 +20,10 @@ SYS_GLES_LIBS="-lGLESv1_CM -lGLESv2"
 AC_SUBST(MATHLIB)
 
 dnl Check for SDL
-# CFLAGS="$CFLAGS `sdl-config --cflags`"
-# LIBS="$LIBS `sdl-config --libs`"
-CFLAGS="$CFLAGS -I/opt/mister-sdk/arm-retrolabs-linux-gnueabihf/sysroot/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT"
-LIBS="$LIBS -L/opt/mister-sdk/arm-retrolabs-linux-gnueabihf/sysroot/usr/lib -lSDL -lpthread"
+CFLAGS="$CFLAGS `sdl-config --cflags`"
+LIBS="$LIBS `sdl-config --libs`"
+#CFLAGS="$CFLAGS -I/opt/mister-sdk/arm-retrolabs-linux-gnueabihf/sysroot/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT"
+#LIBS="$LIBS -L/opt/mister-sdk/arm-retrolabs-linux-gnueabihf/sysroot/usr/lib -lSDL -lpthread"
 
 dnl Check for OpenGL
 AC_MSG_CHECKING(for OpenGL support)
