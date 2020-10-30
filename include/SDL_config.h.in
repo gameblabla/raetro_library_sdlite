@@ -324,9 +324,6 @@
 /* Enable system filesystem support */
 #undef SDL_FILESYSTEM_UNIX
 
-/* Disable screensaver */
-#undef SDL_VIDEO_DISABLE_SCREENSAVER
-
 /* Enable assembly routines */
 #undef SDL_ARM_SIMD_BLITTERS
 #undef SDL_ARM_NEON_BLITTERS

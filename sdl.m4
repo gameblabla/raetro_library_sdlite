@@ -78,8 +78,6 @@ AC_DEFUN([AM_PATH_SDL], [
         AC_MSG_RESULT(yes)
         ifelse([$2], , :, [$2])
     fi
-
     AC_SUBST(SDL_CFLAGS)
     AC_SUBST(SDL_LIBS)
-
 ])

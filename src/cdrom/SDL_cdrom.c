@@ -159,8 +159,7 @@ CDstatus SDL_CDStatus(SDL_CD *cdrom) {
 				/* Keep looking */;
 			}
 #ifdef DEBUG_CDROM
-			fprintf(stderr, "Current position: %d, track = %d (offset is %d)\n",
-						  position, i-1, cdrom->track[i-1].offset);
+			fprintf(stderr, "Current position: %d, track = %d (offset is %d)\n", position, i-1, cdrom->track[i-1].offset);
 #endif
 			cdrom->cur_track = i - 1;
 			position -= cdrom->track[cdrom->cur_track].offset;
