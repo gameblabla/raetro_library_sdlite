@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.13)
-project(sdlite_dirty C)
+cmake_minimum_required(VERSION 3.16)
+project(raetro_library_sdlite_core)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include)
 include_directories(src)
@@ -11,9 +11,12 @@ include_directories(src/audio/dummy)
 include_directories(src/audio/oss)
 include_directories(src/audio/pulse)
 include_directories(src/cdrom)
+include_directories(src/core/linux)
+include_directories(src/core/unix)
 include_directories(src/events)
 include_directories(src/haptic)
 include_directories(src/joystick)
+include_directories(src/joystick/linux)
 include_directories(src/libm)
 include_directories(src/power)
 include_directories(src/thread)
@@ -28,7 +31,7 @@ include_directories(src/video/fbcon)
 include_directories(src/video/kmsdrm)
 include_directories(test)
 
-add_executable(sdlite_dirty
+add_executable(raetro_library_sdlite_core
 			   include/begin_code.h
 			   include/close_code.h
 			   include/SDL.h
@@ -132,7 +135,6 @@ add_executable(sdlite_dirty
 			   src/libm/e_pow.c
 			   src/libm/e_rem_pio2.c
 			   src/libm/e_sqrt.c
-			   src/libm/e_sqrt.h
 			   src/libm/k_cos.c
 			   src/libm/k_rem_pio2.c
 			   src/libm/k_sin.c
@@ -246,27 +248,25 @@ add_executable(sdlite_dirty
 			   src/SDL_fatal.c
 			   src/SDL_fatal.h
 			   src/SDL_log.c
-			   test/test/SDL_test_assert.c
-			   test/test/SDL_test_common.c
-			   test/test/SDL_test_compare.c
-			   test/test/SDL_test_crc32.c
-			   test/test/SDL_test_font.c
-			   test/test/SDL_test_fuzzer.c
-			   test/test/SDL_test_harness.c
-			   test/test/SDL_test_imageBlit.c
-			   test/test/SDL_test_imageBlitBlend.c
-			   test/test/SDL_test_imageFace.c
-			   test/test/SDL_test_imagePrimitives.c
-			   test/test/SDL_test_imagePrimitivesBlend.c
-			   test/test/SDL_test_log.c
-			   test/test/SDL_test_md5.c
-			   test/test/SDL_test_memory.c
-			   test/test/SDL_test_random.c
+			   test/acinclude.m4
+			   test/aclocal.m4
+			   test/autogen.sh
 			   test/checkkeys.c
 			   test/common.c
 			   test/common.h
+			   test/configure.in
+			   test/COPYING
+			   test/gcc-fat.sh
 			   test/graywin.c
+			   test/icon.bmp
 			   test/loopwave.c
+			   test/Makefile.in
+			   test/moose.dat
+			   test/picture.xbm
+			   test/README
+			   test/sail.bmp
+			   test/sample.bmp
+			   test/sample.wav
 			   test/testalpha.c
 			   test/testaudioinfo.c
 			   test/testbitmap.c
@@ -291,7 +291,6 @@ add_executable(sdlite_dirty
 			   test/testkeys.c
 			   test/testloadso.c
 			   test/testlock.c
-			   test/testmmousetablet.c
 			   test/testmultiaudio.c
 			   test/testoverlay.c
 			   test/testoverlay2.c
@@ -307,4 +306,5 @@ add_executable(sdlite_dirty
 			   test/testwin.c
 			   test/testwm.c
 			   test/threadwin.c
-			   test/torturethread.c)
+			   test/torturethread.c
+			   test/utf8.txt)
