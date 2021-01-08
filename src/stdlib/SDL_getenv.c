@@ -29,78 +29,14 @@
  *
  ******************************************************************************/
 #include "SDL_config.h"
-
 #include "SDL_stdinc.h"
 
 #ifndef HAVE_GETENV
 
-#if defined(__WIN32__) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-/* Note this isn't thread-safe! */
-
-static char *SDL_envmem = NULL;	/* Ugh, memory leak */
-static size_t SDL_envmemlen = 0;
+static char **SDL_env = (char **) 0;
 
 /* Put a variable of the form "name=value" into the environment */
-int SDL_putenv(const char *variable)
-{
-	size_t bufferlen;
-	char *value;
-	const char *sep;
-
-	sep = SDL_strchr(variable, '=');
-	if ( sep == NULL ) {
-		return -1;
-	}
-	bufferlen = SDL_strlen(variable)+1;
-	if ( bufferlen > SDL_envmemlen ) {
-		char *newmem = (char *)SDL_realloc(SDL_envmem, bufferlen);
-		if ( newmem == NULL ) {
-			return -1;
-		}
-		SDL_envmem = newmem;
-		SDL_envmemlen = bufferlen;
-	}
-	SDL_strlcpy(SDL_envmem, variable, bufferlen);
-	value = SDL_envmem + (sep - variable);
-	*value++ = '\0';
-	if ( !SetEnvironmentVariable(SDL_envmem, *value ? value : NULL) ) {
-		return -1;
-	}
-	return 0;
-}
-
-/* Retrieve a variable named "name" from the environment */
-char *SDL_getenv(const char *name)
-{
-	size_t bufferlen;
-
-	bufferlen = GetEnvironmentVariable(name, SDL_envmem, (DWORD)SDL_envmemlen);
-	if ( bufferlen == 0 ) {
-		return NULL;
-	}
-	if ( bufferlen > SDL_envmemlen ) {
-		char *newmem = (char *)SDL_realloc(SDL_envmem, bufferlen);
-		if ( newmem == NULL ) {
-			return NULL;
-		}
-		SDL_envmem = newmem;
-		SDL_envmemlen = bufferlen;
-		GetEnvironmentVariable(name, SDL_envmem, (DWORD)SDL_envmemlen);
-	}
-	return SDL_envmem;
-}
-
-#else /* roll our own */
-
-static char **SDL_env = (char **)0;
-
-/* Put a variable of the form "name=value" into the environment */
-int SDL_putenv(const char *variable)
-{
+int SDL_putenv(const char *variable) {
 	const char *name, *value;
 	int added;
 	int len, i;
@@ -108,38 +44,38 @@ int SDL_putenv(const char *variable)
 	char *new_variable;
 
 	/* A little error checking */
-	if ( ! variable ) {
-		return(-1);
+	if(!variable) {
+		return (-1);
 	}
 	name = variable;
-	for ( value=variable; *value && (*value != '='); ++value ) {
+	for (value = variable; *value && (*value != '='); ++value) {
 		/* Keep looking for '=' */ ;
 	}
-	if ( *value ) {
+	if(*value) {
 		++value;
 	} else {
-		return(-1);
+		return (-1);
 	}
 
 	/* Allocate memory for the variable */
 	new_variable = SDL_strdup(variable);
-	if ( ! new_variable ) {
-		return(-1);
+	if(!new_variable) {
+		return (-1);
 	}
 
 	/* Actually put it into the environment */
 	added = 0;
 	i = 0;
-	if ( SDL_env ) {
+	if(SDL_env) {
 		/* Check to see if it's already there... */
 		len = (value - name);
-		for ( ; SDL_env[i]; ++i ) {
-			if ( SDL_strncmp(SDL_env[i], name, len) == 0 ) {
+		for (; SDL_env[i]; ++i) {
+			if(SDL_strncmp(SDL_env[i], name, len) == 0) {
 				break;
 			}
 		}
 		/* If we found it, just replace the entry */
-		if ( SDL_env[i] ) {
+		if(SDL_env[i]) {
 			SDL_free(SDL_env[i]);
 			SDL_env[i] = new_variable;
 			added = 1;
@@ -147,12 +83,12 @@ int SDL_putenv(const char *variable)
 	}
 
 	/* Didn't find it in the environment, expand and add */
-	if ( ! added ) {
-		new_env = SDL_realloc(SDL_env, (i+2)*sizeof(char *));
-		if ( new_env ) {
+	if(!added) {
+		new_env = SDL_realloc(SDL_env, (i + 2) * sizeof(char *));
+		if(new_env) {
 			SDL_env = new_env;
 			SDL_env[i++] = new_variable;
-			SDL_env[i++] = (char *)0;
+			SDL_env[i++] = (char *) 0;
 			added = 1;
 		} else {
 			SDL_free(new_variable);
@@ -162,33 +98,28 @@ int SDL_putenv(const char *variable)
 }
 
 /* Retrieve a variable named "name" from the environment */
-char *SDL_getenv(const char *name)
-{
+char *SDL_getenv(const char *name) {
 	int len, i;
 	char *value;
 
-	value = (char *)0;
-	if ( SDL_env ) {
+	value = (char *) 0;
+	if(SDL_env) {
 		len = SDL_strlen(name);
-		for ( i=0; SDL_env[i] && !value; ++i ) {
-			if ( (SDL_strncmp(SDL_env[i], name, len) == 0) &&
-				 (SDL_env[i][len] == '=') ) {
-				value = &SDL_env[i][len+1];
+		for (i = 0; SDL_env[i] && !value; ++i) {
+			if((SDL_strncmp(SDL_env[i], name, len) == 0) && (SDL_env[i][len] == '=')) {
+				value = &SDL_env[i][len + 1];
 			}
 		}
 	}
 	return value;
 }
 
-#endif /* __WIN32__ */
-
 #endif /* !HAVE_GETENV */
 
 #ifdef TEST_MAIN
 #include <stdio.h>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	char *value;
 
 	printf("Checking for non-existent variable... ");
